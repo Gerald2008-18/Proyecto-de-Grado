@@ -955,6 +955,8 @@
             videoRef.current.srcObject = stream;
             streamRef.current = stream;
             setIsScanning(true);
+            // Iniciar escaneo automático en segundo plano
+            startAutoScan();
           }
         } catch (err) {
           setError('No se pudo acceder a la cámara. Por favor, da permisos de cámara.');
@@ -998,15 +1000,22 @@
         }
       };
 
-      const handleScanClick = () => {
+      const startAutoScan = () => {
+        // Escaneo automático cada 300ms
         if (scanIntervalRef.current) {
           clearInterval(scanIntervalRef.current);
         }
-        scanIntervalRef.current = setInterval(scanQRCode, 100);
+        scanIntervalRef.current = setInterval(scanQRCode, 300);
       };
 
       const capturePhoto = () => {
         if (videoRef.current && canvasRef.current) {
+          // Pausar escaneo automático mientras capturamos
+          if (scanIntervalRef.current) {
+            clearInterval(scanIntervalRef.current);
+            scanIntervalRef.current = null;
+          }
+          
           const video = videoRef.current;
           const canvas = canvasRef.current;
           const ctx = canvas.getContext('2d');
@@ -1081,56 +1090,32 @@
 
               {!showImageViewer ? (
                 <>
-                  {/* Vista de cámara en vivo */}
+                  {/* Vista de cámara en vivo - SIN ANIMACIONES */}
                   <div className="bg-black rounded-lg overflow-hidden border-4 border-institutional-yellow relative">
                     <div className="relative aspect-video">
                       <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                      {isScanning && (
-                        <div className="absolute inset-0">
-                          {/* Marco de escaneo animado */}
-                          <div className="absolute inset-0 border-4 border-institutional-yellow" style={{
-                            animation: 'pulse 2s ease-in-out infinite',
-                            boxShadow: '0 0 20px rgba(255, 193, 7, 0.5)'
-                          }}></div>
-                          {/* Línea de escaneo horizontal */}
-                          <div className="absolute left-0 right-0 h-1 bg-institutional-yellow" style={{
-                            top: '50%',
-                            boxShadow: '0 0 10px rgba(255, 193, 7, 0.8)',
-                            animation: 'scan 2s linear infinite'
-                          }}></div>
-                        </div>
-                      )}
                     </div>
                   </div>
 
                   <canvas ref={canvasRef} className="hidden"></canvas>
 
-                  {/* Botones de acción */}
-                  <div className="mt-4 flex gap-3">
+                  {/* Solo botón para capturar foto */}
+                  <div className="mt-4">
                     {isScanning && (
-                      <>
-                        <button 
-                          onClick={capturePhoto}
-                          className="flex-1 bg-institutional-yellow text-gray-800 px-6 py-4 rounded-xl font-bold text-lg hover:bg-institutional-yellow-dark transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-blue hover-scale"
-                        >
-                          <i data-lucide="camera" style={{width:24,height:24}}></i>
-                          Capturar Foto
-                        </button>
-                        <button 
-                          onClick={handleScanClick}
-                          className="flex-1 bg-institutional-blue text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-institutional-blue-dark transition-all shadow-lg flex items-center justify-center gap-2 hover-scale"
-                        >
-                          <i data-lucide="scan" style={{width:24,height:24}}></i>
-                          Escaneo Automático
-                        </button>
-                      </>
+                      <button 
+                        onClick={capturePhoto}
+                        className="w-full bg-institutional-yellow text-gray-800 px-6 py-4 rounded-xl font-bold text-lg hover:bg-institutional-yellow-dark transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-blue hover-scale"
+                      >
+                        <i data-lucide="camera" style={{width:24,height:24}}></i>
+                        Capturar Foto
+                      </button>
                     )}
                   </div>
 
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border-2 border-institutional-blue">
                     <p className="text-sm text-institutional-blue text-center flex items-center justify-center gap-2">
                       <i data-lucide="info" style={{width:18,height:18}}></i>
-                      Enfoca el código QR y presiona "Capturar Foto" o "Escaneo Automático"
+                      La cámara escanea automáticamente. También puedes capturar una foto para revisarla.
                     </p>
                   </div>
                 </>
@@ -1175,14 +1160,6 @@
               )}
             </div>
           </div>
-
-          <style>{`
-            @keyframes scan {
-              0% { top: 10%; }
-              50% { top: 90%; }
-              100% { top: 10%; }
-            }
-          `}</style>
         </div>
       );
     }
@@ -1293,6 +1270,94 @@
       );
     }
 
+    // FileViewerModal component
+    function FileViewerModal({ fileData, onClose }) {
+      useEffect(() => { if (window.lucide) window.lucide.replace(); }, []);
+
+      const handleDownload = () => {
+        if (!fileData || !fileData.data) return;
+        
+        const link = document.createElement('a');
+        link.href = fileData.data;
+        link.download = fileData.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      const isImage = fileData && fileData.type && fileData.type.startsWith('image/');
+      const isPDF = fileData && fileData.type && fileData.type === 'application/pdf';
+
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-4 border-institutional-yellow animate-slideIn">
+            <div className="bg-institutional-blue p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white">
+                <i data-lucide="file-text" style={{width:24,height:24}}></i>
+                <h2 className="text-xl font-bold">Archivo Adjunto</h2>
+              </div>
+              <button onClick={onClose} className="text-white hover:bg-institutional-blue-dark rounded-lg p-2 hover-scale">
+                <i data-lucide="x" style={{width:24,height:24}}></i>
+              </button>
+            </div>
+
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="bg-blue-50 border-2 border-institutional-blue rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-institutional-blue rounded-lg p-3">
+                      <i data-lucide={isImage ? 'image' : isPDF ? 'file-text' : 'file'} style={{width:24,height:24}} className="text-white"></i>
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">{fileData.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {fileData.size ? `${(fileData.size / 1024).toFixed(2)} KB` : 'Tamaño desconocido'}
+                      </p>
+                    </div>
+                  </div>
+                  {fileData.data && (
+                    <button 
+                      onClick={handleDownload}
+                      className="bg-institutional-yellow text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-institutional-yellow-dark flex items-center gap-2 hover-scale"
+                    >
+                      <i data-lucide="download" style={{width:18,height:18}}></i>
+                      Descargar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {fileData.data ? (
+                <div className="border-4 border-institutional-yellow rounded-xl overflow-hidden bg-gray-100">
+                  {isImage ? (
+                    <img src={fileData.data} alt={fileData.name} className="w-full h-auto" />
+                  ) : isPDF ? (
+                    <iframe 
+                      src={fileData.data} 
+                      className="w-full h-[600px]"
+                      title={fileData.name}
+                    />
+                  ) : (
+                    <div className="p-8 text-center">
+                      <i data-lucide="file" style={{width:64,height:64}} className="mx-auto mb-4 text-gray-400"></i>
+                      <p className="text-gray-600">Vista previa no disponible para este tipo de archivo.</p>
+                      <p className="text-sm text-gray-500 mt-2">Usa el botón "Descargar" para ver el archivo.</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="border-4 border-institutional-yellow rounded-xl p-8 text-center bg-gray-50">
+                  <i data-lucide="alert-circle" style={{width:64,height:64}} className="mx-auto mb-4 text-orange-400"></i>
+                  <p className="text-gray-600">Este archivo fue registrado en el formato antiguo.</p>
+                  <p className="text-sm text-gray-500 mt-2">Solo se guardó el nombre del archivo, no su contenido.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // JustificationModal component - CON archivo
     function JustificationModal({ record, onClose, onSubmit, isSubmitting }) {
       const [justification, setJustification] = useState(record.motivo_atraso || '');
@@ -1385,6 +1450,7 @@
       const [searchTerm, setSearchTerm] = useState('');
       const [dateFilter, setDateFilter] = useState('');
       const [statusFilter, setStatusFilter] = useState('all');
+      const [viewingFile, setViewingFile] = useState(null);
 
       const normalizeDate = (dateString) => {
         if (!dateString) return '';
@@ -1394,8 +1460,41 @@
 
       // Función helper para determinar si un registro está justificado
       const isJustified = (record) => {
-        // Un registro está justificado si tiene "[Archivo adjunto:" en el motivo
-        return record.motivo_atraso && record.motivo_atraso.includes('[Archivo adjunto:');
+        // Un registro está justificado si tiene "[ARCHIVO_ADJUNTO:" o "[Archivo adjunto:" en el motivo
+        return record.motivo_atraso && (
+          record.motivo_atraso.includes('[ARCHIVO_ADJUNTO:') || 
+          record.motivo_atraso.includes('[Archivo adjunto:')
+        );
+      };
+
+      // Función para extraer el archivo adjunto del motivo
+      const getAttachedFile = (motivo) => {
+        if (!motivo) return null;
+        
+        // Buscar el formato nuevo con datos base64
+        const newFormatMatch = motivo.match(/\[ARCHIVO_ADJUNTO:({.*?})\]/);
+        if (newFormatMatch) {
+          try {
+            return JSON.parse(newFormatMatch[1]);
+          } catch (e) {
+            console.error('Error al parsear archivo adjunto:', e);
+            return null;
+          }
+        }
+        
+        // Buscar el formato antiguo (solo nombre)
+        const oldFormatMatch = motivo.match(/\[Archivo adjunto: (.*?)\]/);
+        if (oldFormatMatch) {
+          return { name: oldFormatMatch[1], data: null };
+        }
+        
+        return null;
+      };
+
+      // Función para obtener el motivo limpio (sin información del archivo)
+      const getCleanMotivo = (motivo) => {
+        if (!motivo) return 'Sin especificar';
+        return motivo.replace(/\[ARCHIVO_ADJUNTO:.*?\]/, '').replace(/\[Archivo adjunto:.*?\]/, '').trim() || 'Sin especificar';
       };
 
       const filteredRecords = records.filter(record => {
@@ -1529,7 +1628,21 @@
                                 {record.hora_llegada || 'N/A'}
                               </span>
                             </td>
-                            <td className="p-3 text-sm text-gray-600">{record.motivo_atraso || 'Sin especificar'}</td>
+                            <td className="p-3 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <span>{getCleanMotivo(record.motivo_atraso)}</span>
+                                {getAttachedFile(record.motivo_atraso) && (
+                                  <button
+                                    onClick={() => setViewingFile(getAttachedFile(record.motivo_atraso))}
+                                    className="bg-institutional-blue text-white px-2 py-1 rounded text-xs font-semibold hover:bg-institutional-blue-dark flex items-center gap-1 hover-scale"
+                                    title="Ver archivo adjunto"
+                                  >
+                                    <i data-lucide="paperclip" style={{width:12,height:12}}></i>
+                                    Ver archivo
+                                  </button>
+                                )}
+                              </div>
+                            </td>
                             {userRole === 'inspeccion' && <td className="p-3 text-sm text-gray-600">{record.registrado_por || 'N/A'}</td>}
                             <td className="p-3">
                               {isJustified(record) ? (
@@ -1575,6 +1688,8 @@
               </>
             )}
           </div>
+
+          {viewingFile && <FileViewerModal fileData={viewingFile} onClose={() => setViewingFile(null)} />}
         </div>
       );
     }
@@ -1630,16 +1745,29 @@
       const submitJustification = async (justification, file) => {
         setIsSubmitting(true);
         try {
-          let fileInfo = null;
+          let fileData = null;
+          
+          // Convertir archivo a base64 si existe
           if (file) {
-            fileInfo = {
+            const base64 = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            
+            fileData = {
               name: file.name,
               size: file.size,
-              type: file.type
+              type: file.type,
+              data: base64
             };
           }
 
-          const motivoTexto = justification + (fileInfo ? ` [Archivo adjunto: ${fileInfo.name}]` : '');
+          // Guardar motivo y archivo en formato JSON
+          const motivoTexto = fileData 
+            ? `${justification} [ARCHIVO_ADJUNTO:${JSON.stringify(fileData)}]`
+            : justification;
 
           const updateData = {
             motivo_atraso: motivoTexto
