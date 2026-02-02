@@ -1455,15 +1455,10 @@
             setShowManualInput(false);
             return;
           }
-          
           let students = [];
           const encodedSearch = encodeURIComponent(`*${searchTerm}*`);
-          
-          // Buscar en la tabla 'atrasos' por nombre completo o curso
-          // Según la imagen, las columnas son: 'Nombre completo estudiante', 'Curso', 'Email estudiante'
           const query = `or=(Nombre%20completo%20estudiante.ilike.${encodedSearch},Curso.ilike.${encodedSearch})&select=*&limit=1`;
           const results = await supabaseRequest(`atrasos?${query}`);
-          
           if (!results || results.length === 0) {
             showNotification('error', 'Estudiante no encontrado en la base de datos');
             setIsSubmitting(false);
@@ -1471,15 +1466,11 @@
             setShowManualInput(false);
             return;
           }
-          
           const student = results[0];
           const ecuadorDateTime = getEcuadorDateTime();
           const today = ecuadorDateTime.dateString;
-          
-          // Verificar si ya tiene un registro CONFIRMADO hoy (donde fecha_atraso no sea NULL y sea hoy)
           const todayQuery = `Nombre%20completo%20estudiante=eq.${encodeURIComponent(student['Nombre completo estudiante'])}&fecha_atraso=eq.${today}&estado=eq.confirmado`;
           const existingRecords = await supabaseRequest(`atrasos?${todayQuery}`);
-          
           if (existingRecords && existingRecords.length > 0) {
             showNotification('error', 'Este estudiante ya tiene un registro de atraso confirmado hoy');
             setIsSubmitting(false);
@@ -1487,14 +1478,11 @@
             setShowManualInput(false);
             return;
           }
-          
-          // Preparar el objeto para el modal de confirmación
           const studentToConfirm = {
             'Nombre completo estudiante': student['Nombre completo estudiante'],
             'Curso': student.Curso,
             'Email estudiante': student['Email estudiante']
           };
-          
           setSelectedStudent(studentToConfirm);
           setShowScanner(false);
           setShowManualInput(false);
@@ -1507,21 +1495,7 @@
           setShowManualInput(false);
         }
       };
-    
-          
-          setSelectedStudent(normalizedStudent);
-          setShowScanner(false);
-          setShowManualInput(false);
-          setIsSubmitting(false);
-        } catch (err) {
-          console.error('Error al buscar estudiante:', err);
-          showNotification('error','Error al buscar estudiante: ' + err.message);
-          setIsSubmitting(false);
-          setShowScanner(false);
-          setShowManualInput(false);
-        }
-      };
-    
+      
       const handleConfirmAttendance = async (recordedBy) => {
         setIsSubmitting(true);
         try {
