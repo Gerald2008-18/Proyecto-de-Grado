@@ -173,7 +173,8 @@
       // Solo pedir retorno de datos en POST (INSERT) y GET; en PATCH/PUT no usar
       // "Prefer: return=representation" porque dispara la verificación de replica identity
       // y falla si la tabla no tiene PRIMARY KEY reconocido por Realtime.
-      if (method === 'POST') {
+      // CORRECCIÓN: Se NECESITA Prefer en PATCH también para confirmar que la fila fue actualizada.
+      if (method === 'POST' || method === 'PATCH') {
         headers['Prefer'] = 'return=representation';
       }
       const options = { method, headers };
@@ -1443,10 +1444,17 @@
             ? `${justification} [ARCHIVO_ADJUNTO:${JSON.stringify(fileData)}]`
             : justification;
 
-          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', {
+          console.log('PATCH justificar → N:', justificationRecord.N);
+          const patchResult = await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', {
             motivo_atraso: motivoTexto,
             estado: 'justificado'
           });
+          console.log('PATCH justificación resultado:', JSON.stringify(patchResult));
+          if (patchResult && Array.isArray(patchResult) && patchResult.length === 0) {
+            showNotification('error', 'No se pudo guardar la justificación. La fila no fue encontrada.');
+            setIsSubmitting(false);
+            return;
+          }
 
           showNotification('success', 'Justificación guardada correctamente');
           setJustificationRecord(null);
@@ -1553,8 +1561,18 @@
           }
 
           // ── Guardar N para el PATCH posterior
+          // Verificar que N existe antes de proceder
+          if (student.N == null || student.N === undefined) {
+            console.error('CRITICAL: student.N is null. Full student object:', JSON.stringify(student));
+            showNotification('error', 'Error interno: no se pudo obtener el ID del estudiante. Intenta de nuevo.');
+            setIsSubmitting(false);
+            setShowScanner(false);
+            setShowManualInput(false);
+            return;
+          }
+          console.log('Student N encontrado:', student.N, '| Estudiante:', student['Nombre completo estudiante']);
           setSelectedStudent({
-            N: student.N,                                                    // ← imprescindible
+            N: student.N,
             'Nombre completo estudiante': student['Nombre completo estudiante'],
             Curso: student.Curso,
             'Email estudiante': student['Email estudiante'] || null
@@ -1575,6 +1593,13 @@
       const handleConfirmAttendance = async (recordedBy) => {
         setIsSubmitting(true);
         try {
+          // Validar N antes de intentar PATCH
+          if (selectedStudent.N == null) {
+            showNotification('error', 'Error: no se pudo identificar la fila del estudiante (N nulo)');
+            setIsSubmitting(false);
+            return;
+          }
+          console.log('PATCH confirmar atraso → N:', selectedStudent.N);
           const ecuadorDateTime = getEcuadorDateTime();
 
           // Solo los campos que se van a LLENAR en la fila existente
@@ -1586,7 +1611,16 @@
           };
 
           // PATCH sobre la fila que ya existe, identificada por N
-          await supabaseRequest(`atrasos?N=eq.${selectedStudent.N}`, 'PATCH', updateFields);
+          const patchResult = await supabaseRequest(`atrasos?N=eq.${selectedStudent.N}`, 'PATCH', updateFields);
+          console.log('PATCH resultado:', JSON.stringify(patchResult));
+
+          // Verificar que el PATCH efectivamente actualizó algo
+          if (patchResult && Array.isArray(patchResult) && patchResult.length === 0) {
+            console.error('PATCH retornó array vacío → la fila N=' + selectedStudent.N + ' no existe o RLS la bloquea');
+            showNotification('error', 'No se pudo actualizar el registro. Verifica las políticas de la tabla.');
+            setIsSubmitting(false);
+            return;
+          }
 
           showNotification('success', `Atraso confirmado para ${selectedStudent['Nombre completo estudiante']}`);
           setSelectedStudent(null);
@@ -1601,7 +1635,7 @@
       const loadAttendanceRecords = async () => {
         setLoading(true);
         try {
-          const allRecords = await supabaseRequest('atrasos?select=*&fecha_atraso=not.is.null&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
+          const allRecords = await supabaseRequest('atrasos?select=N,Curso,Nombre%20completo%20estudiante,Correo%20electrónico%20estudiante,fecha_atraso,hora_llegada,motivo_atraso,registrado_por,estado,created_at,Justificación&fecha_atraso=not.is.null&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
           setRecords(allRecords || []);
         } catch (err) {
           console.error('Error al cargar registros:', err);
