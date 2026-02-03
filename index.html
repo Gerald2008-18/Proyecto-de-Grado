@@ -1415,6 +1415,10 @@
         setTimeout(()=> setNotification(null), 4000);
       };
       const handleJustification = (record) => {
+        console.log('Iniciando justificación para registro:', record);
+        if (record.N == null) {
+          console.error('ERROR: El registro no tiene ID (N). Campos disponibles:', Object.keys(record));
+        }
         setJustificationRecord(record);
       };
       const submitJustification = async (justification, file) => {
@@ -1637,7 +1641,9 @@
       const loadAttendanceRecords = async () => {
         setLoading(true);
         try {
-          const allRecords = await supabaseRequest('atrasos?select=*&fecha_atraso=not.is.null&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
+          // Asegurar que N se incluya explícitamente y registrar para depuración
+          const allRecords = await supabaseRequest('atrasos?select=N,*&fecha_atraso=not.is.null&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
+          console.log('Registros cargados (primeros 2):', allRecords?.slice(0, 2));
           setRecords(allRecords || []);
         } catch (err) {
           console.error('Error al cargar registros:', err);
