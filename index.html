@@ -165,6 +165,7 @@
       return matchingWords.length >= 2;
     };
     const supabaseRequest = async (endpoint, method = 'GET', body = null) => {
+      console.log(`Supabase Request: ${method} ${endpoint}`, body);
       const options = {
         method,
         headers: {
@@ -175,13 +176,20 @@
         }
       };
       if (body) options.body = JSON.stringify(body);
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, options);
-      if (!res.ok) {
-        let errText = 'Error en la petición';
-        try { const j = await res.json(); errText = j.message || j.error || errText; } catch {}
-        throw new Error(errText);
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, options);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.error('Supabase Error Response:', errData);
+          throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        console.log('Supabase Success Response:', data);
+        return data;
+      } catch (err) {
+        console.error('Fetch Error:', err);
+        throw err;
       }
-      return res.json();
     };
     function FileUpload({ onFileSelect, selectedFile }) {
       const [isDragging, setIsDragging] = useState(false);
@@ -1448,7 +1456,7 @@
       const findStudent = async (originalSearchTerm) => {
         try {
           setIsSubmitting(true);
-          const searchTerm = originalSearchTerm?.toString().trim();
+          let searchTerm = originalSearchTerm?.toString().trim();
           
           if (!searchTerm) {
             showNotification('error', 'Ingrese el nombre o ID del estudiante');
@@ -1456,6 +1464,21 @@
             setShowScanner(false);
             setShowManualInput(false);
             return;
+          }
+
+          // --- LÓGICA DE PARSEO PARA QR CON MÚLTIPLES DATOS ---
+          // Si el QR viene en formato "ID:1;Nombre:JUAN;..." o similar
+          if (searchTerm.includes(';') || searchTerm.includes(':')) {
+            const parts = searchTerm.split(';');
+            const data = {};
+            parts.forEach(p => {
+              const [key, ...val] = p.split(':');
+              if (key && val) data[key.trim().toLowerCase()] = val.join(':').trim();
+            });
+            
+            // Priorizar búsqueda por ID o Nombre extraído del QR
+            if (data.id) searchTerm = data.id;
+            else if (data.nombre) searchTerm = data.nombre;
           }
 
           let results = [];
@@ -1679,4 +1702,4 @@
     root.render(<App />);
 </script>
 </body>
-</html> 
+</html>
