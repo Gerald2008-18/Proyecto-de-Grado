@@ -370,7 +370,7 @@
           return;
         }
         if (nivelEducativo === 'bachillerato' && !especialidad) {
-          setError('Por favor selecciona una especialidad');
+          setError('Por favor selecciona una especialidad para Bachillerato');
           return;
         }
         if (!email.endsWith('@est.uepdc.edu.ec')) {
@@ -383,142 +383,123 @@
             setError('Este correo ya está registrado');
             return;
           }
+          const cursoCompleto = construirCursoCompleto();
+          if (!cursoCompleto) {
+            setError('Error al construir el curso. Por favor verifica los datos.');
+            return;
+          }
           const newUser = {
-            email,
-            password,
-            nombre_completo: nombreCompleto.toUpperCase(),
-            cedula,
-            nivel_educativo: nivelEducativo,
-            ano_grado: anoGrado,
-            especialidad: especialidad || null,
-            paralelo,
-            curso_completo: construirCursoCompleto(),
-            fecha_registro: new Date().toISOString()
+            email: email,
+            password: password,
+            nombre_completo: nombreCompleto,
+            cedula: cedula,
+            curso: cursoCompleto
           };
           await supabaseRequest('usuarios_estudiantes', 'POST', newUser);
           setSuccess('Registro exitoso. Ahora puedes iniciar sesión.');
-          setShowRegister(false);
+          setEmail('');
+          setPassword('');
+          setNombreCompleto('');
+          setCedula('');
+          setNivelEducativo('');
+          setAnoGrado('');
+          setEspecialidad('');
+          setParalelo('');
+          setTimeout(() => {
+            setShowRegister(false);
+            setSuccess('');
+          }, 2000);
         } catch (err) {
           setError('Error al registrar: ' + err.message);
         }
       };
+      useEffect(() => { if (window.lucide) window.lucide.replace(); }, [error, success, userType, showRegister, nivelEducativo, anoGrado, especialidad]);
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 p-4">
-          <div className="bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/20">
-            <div className="text-center mb-8">
-              <div className="bg-white p-4 rounded-2xl shadow-lg inline-block mb-4 border-2 border-institutional-yellow">
-                <img src={LOGO_URL} alt="Logo" className="w-20 h-20 object-contain" />
+        <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4 ">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow  ">
+            <div className="bg-gradient-to-r from-institutional-blue to-institutional-blue-dark p-8 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent"></div>
+              <div className="text-center text-white relative z-10">
+                <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4  drop-shadow-2xl" />
+                <h1 className="text-3xl font-bold drop-shadow-2xl " style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>Sistema de Atrasos</h1>
+                <p className="text-yellow-300 mt-2 font-bold text-lg drop-shadow-lg" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>UEPDC</p>
               </div>
-              <h2 className="text-3xl font-black text-institutional-blue tracking-tight">SISTEMA DE ATRASOS</h2>
-              <p className="text-gray-500 font-medium mt-2 uppercase text-xs tracking-widest">Unidad Educativa Particular "De la Cuadra"</p>
             </div>
-            <div className="flex bg-gray-100 p-1 rounded-2xl mb-6">
-              <button
-                onClick={() => { setUserType('estudiante'); setShowRegister(false); }}
-                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${userType === 'estudiante' ? 'bg-white text-institutional-blue shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                Estudiante
-              </button>
-              <button
-                onClick={() => { setUserType('inspeccion'); setShowRegister(false); }}
-                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${userType === 'inspeccion' ? 'bg-white text-institutional-blue shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                Inspección
-              </button>
-            </div>
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-xl mb-6 text-sm font-bold animate-pulse">
-                {error}
+            <div className="p-8">
+              <div className="flex gap-2 mb-6">
+                <button
+                  onClick={() => { setUserType('estudiante'); setShowRegister(false); }}
+                  className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2  ${
+                    userType === 'estudiante'
+                      ? 'bg-gradient-to-r from-institutional-blue to-institutional-blue-dark text-white shadow-lg border-2 border-institutional-blue'
+                      : 'bg-gray-100 text-gray-600 '
+                  }`}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <span>Estudiante</span>
+                </button>
+                <button
+                  onClick={() => { setUserType('inspeccion'); setShowRegister(false); }}
+                  className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2  ${
+                    userType === 'inspeccion'
+                      ? 'bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 shadow-lg border-2 border-institutional-yellow'
+                      : 'bg-gray-100 text-gray-600 '
+                  }`}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span>Inspección</span>
+                </button>
               </div>
-            )}
-            {success && (
-              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-xl mb-6 text-sm font-bold">
-                {success}
-              </div>
-            )}
-            <div className="space-y-5">
-              {userType === 'inspeccion' ? (
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 ml-1 uppercase">Correo de Inspección</label>
-                    <div className="relative">
-                      <i data-lucide="mail" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style={{width:18,height:18}}></i>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-institutional-blue focus:ring-0 transition-all font-medium"
-                        placeholder="usuario@uepdc.edu.ec"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 ml-1 uppercase">Contraseña</label>
-                    <div className="relative">
-                      <i data-lucide="lock" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style={{width:18,height:18}}></i>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-institutional-blue focus:ring-0 transition-all font-medium"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleLogin}
-                    className="w-full bg-institutional-blue hover:bg-institutional-blue-dark text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-3"
-                  >
-                    <span>INICIAR SESIÓN</span>
-                    <i data-lucide="arrow-right" style={{width:20,height:20}}></i>
-                  </button>
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border-2 border-red-300 rounded-lg text-red-700 text-sm flex items-center gap-2 ">
+                  <i data-lucide="alert-circle" style={{width:18,height:18}}></i>
+                  {error}
                 </div>
-              ) : userType === 'estudiante' && !showRegister ? (
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 ml-1 uppercase">Correo Institucional</label>
-                    <div className="relative">
-                      <i data-lucide="mail" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style={{width:18,height:18}}></i>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-institutional-blue focus:ring-0 transition-all font-medium"
-                        placeholder="usuario@est.uepdc.edu.ec"
-                      />
-                    </div>
+              )}
+              {success && (
+                <div className="mb-4 p-3 bg-green-50 border-2 border-green-300 rounded-lg text-green-700 text-sm flex items-center gap-2 ">
+                  <i data-lucide="check-circle" style={{width:18,height:18}}></i>
+                  {success}
+                </div>
+              )}
+              {userType === 'estudiante' && !showRegister ? (
+                <div className="space-y-4 ">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Correo Estudiantil</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      placeholder="tu@est.uepdc.edu.ec"
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow focus:border-institutional-yellow transition-all"
+                    />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 ml-1 uppercase">Contraseña</label>
-                    <div className="relative">
-                      <i data-lucide="lock" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style={{width:18,height:18}}></i>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-institutional-blue focus:ring-0 transition-all font-medium"
-                        placeholder="••••••••"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      placeholder="••••••••"
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow focus:border-institutional-yellow transition-all"
+                    />
                   </div>
                   <button
                     onClick={handleLogin}
-                    className="w-full bg-institutional-blue hover:bg-institutional-blue-dark text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-3"
+                    className="w-full bg-gradient-to-r from-institutional-blue to-institutional-blue-dark text-white py-3.5 rounded-lg font-bold   transition-all shadow-lg  flex items-center justify-center gap-2"
                   >
-                    <span>INICIAR SESIÓN</span>
-                    <i data-lucide="arrow-right" style={{width:20,height:20}}></i>
+                    <i data-lucide="log-in" style={{width:20,height:20}}></i>
+                    Iniciar Sesión
                   </button>
-                  <div className="text-center mt-4">
-                    <p className="text-sm text-gray-500 font-medium">
-                      ¿No tienes cuenta?{' '}
-                      <button
-                        onClick={() => setShowRegister(true)}
-                        className="text-institutional-blue font-black hover:underline"
-                      >
-                        Regístrate aquí
-                      </button>
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => setShowRegister(true)}
+                    className="w-full bg-white border-2 border-institutional-blue text-institutional-blue py-3.5 rounded-lg font-bold  transition-all  flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="user-check" style={{width:20,height:20}}></i>
+                    Registrarse
+                  </button>
                 </div>
               ) : userType === 'estudiante' && showRegister ? (
                 <div className="space-y-4  max-h-[60vh] overflow-y-auto pr-2">
@@ -621,10 +602,10 @@
                       </select>
                     </div>
                   )}
-                  {anoGrado && getParalelosDisponibles().length > 0 && (
+                  {((nivelEducativo !== 'bachillerato' && anoGrado) || (nivelEducativo === 'bachillerato' && especialidad)) && getParalelosDisponibles().length > 0 && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                        <i data-lucide="layout" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                        <i data-lucide="users" style={{width:16,height:16}} className="text-institutional-blue"></i>
                         Paralelo *
                       </label>
                       <select
@@ -653,143 +634,861 @@
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="••••••••"
                       className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
                     />
                   </div>
-                  <div className="pt-4 space-y-3">
-                    <button
-                      onClick={handleRegister}
-                      className="w-full bg-institutional-blue hover:bg-institutional-blue-dark text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-200 transition-all active:scale-95"
-                    >
-                      CREAR CUENTA
-                    </button>
-                    <button
-                      onClick={() => setShowRegister(false)}
-                      className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 rounded-2xl font-bold text-sm transition-all"
-                    >
-                      VOLVER AL INICIO
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleRegister}
+                    className="w-full bg-gradient-to-r from-institutional-blue to-institutional-blue-dark text-white py-3.5 rounded-lg font-bold   transition-all shadow-lg  flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="sparkles" style={{width:20,height:20}}></i>
+                    Crear Cuenta
+                  </button>
+                  <button
+                    onClick={() => setShowRegister(false)}
+                    className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3.5 rounded-lg font-bold  transition-all  flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="arrow-left" style={{width:20,height:20}}></i>
+                    Volver a Iniciar Sesión
+                  </button>
                 </div>
-              ) : null}
+              ) : (
+                <div className="space-y-4 ">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Correo de Inspección</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      placeholder="inspector@uepdc.edu.ec"
+                      className="w-full border-2 border-institutional-yellow rounded-lg p-3 focus:ring-2 focus:ring-institutional-blue transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      placeholder="••••••••"
+                      className="w-full border-2 border-institutional-yellow rounded-lg p-3 focus:ring-2 focus:ring-institutional-blue transition-all"
+                    />
+                  </div>
+                  <button
+                    onClick={handleLogin}
+                    className="w-full bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 py-3.5 rounded-lg font-bold   transition-all shadow-lg  flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="shield-check" style={{width:20,height:20}}></i>
+                    Iniciar Sesión
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       );
     }
-    function App() {
+    function QRScanner({ onScan, onClose }) {
+      const [isScanning, setIsScanning] = useState(false);
+      const [error, setError] = useState('');
+      const [capturedImage, setCapturedImage] = useState(null);
+      const [showImageViewer, setShowImageViewer] = useState(false);
+      const videoRef = useRef(null);
+      const canvasRef = useRef(null);
+      const streamRef = useRef(null);
+      const scanIntervalRef = useRef(null);
+      const startCamera = async () => {
+        try {
+          setError('');
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }});
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            streamRef.current = stream;
+            setIsScanning(true);
+            startAutoScan();
+          }
+        } catch (err) {
+          setError('No se pudo acceder a la cámara. Por favor, da permisos de cámara.');
+        }
+      };
+      const stopCamera = () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(t => t.stop());
+          streamRef.current = null;
+        }
+        if (scanIntervalRef.current) {
+          clearInterval(scanIntervalRef.current);
+          scanIntervalRef.current = null;
+        }
+        setIsScanning(false);
+      };
+      const scanQRCode = () => {
+        if (!videoRef.current || !canvasRef.current) return;
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
+          if (code) {
+            stopCamera();
+            const qrData = code.data;
+            const idMatch = qrData.match(/ID:(\d+)/i);
+            const studentId = idMatch ? idMatch[1] : qrData;
+            onScan(studentId);
+          }
+        }
+      };
+      const startAutoScan = () => {
+        if (scanIntervalRef.current) {
+          clearInterval(scanIntervalRef.current);
+        }
+        scanIntervalRef.current = setInterval(scanQRCode, 300);
+      };
+      const capturePhoto = () => {
+        if (videoRef.current && canvasRef.current) {
+          if (scanIntervalRef.current) {
+            clearInterval(scanIntervalRef.current);
+            scanIntervalRef.current = null;
+          }
+          const video = videoRef.current;
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext('2d');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageDataUrl = canvas.toDataURL('image/png');
+          setCapturedImage(imageDataUrl);
+          setShowImageViewer(true);
+          stopCamera();
+        }
+      };
+      const processCapturedImage = () => {
+        if (canvasRef.current) {
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext('2d');
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
+          if (code) {
+            const qrData = code.data;
+            const idMatch = qrData.match(/ID:(\d+)/i);
+            const studentId = idMatch ? idMatch[1] : qrData;
+            onScan(studentId);
+          } else {
+            setError('No se detectó ningún código QR en la imagen. Intenta capturar nuevamente.');
+          }
+        }
+      };
+      const retakePhoto = () => {
+        setCapturedImage(null);
+        setShowImageViewer(false);
+        setError('');
+        startCamera();
+      };
+      useEffect(() => {
+        startCamera();
+        return () => stopCamera();
+      }, []);
+      useEffect(() => {
+        if (window.lucide) window.lucide.replace();
+      }, [isScanning, error, showImageViewer]);
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 ">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden relative border-4 border-institutional-yellow ">
+            <button
+              onClick={() => { stopCamera(); onClose(); }}
+              className="absolute top-4 right-4 bg-red-500  text-white rounded-full p-2 z-10 flex items-center justify-center"
+              style={{width: '40px', height: '40px'}}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div className="bg-institutional-blue p-4">
+              <div className="flex items-center gap-2 text-white">
+                <i data-lucide="qr-code" style={{width:24,height:24}}></i>
+                <h2 className="text-xl font-bold">Escanear Código QR</h2>
+              </div>
+            </div>
+            <div className="p-6">
+              {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm  flex items-center gap-2">
+                <i data-lucide="alert-circle" style={{width:18,height:18}}></i>
+                <span>{error}</span>
+              </div>}
+              {!showImageViewer ? (
+                <>
+                  {/* Vista de cámara en vivo - SIN ANIMACIONES */}
+                  <div className="bg-black rounded-lg overflow-hidden border-4 border-institutional-yellow relative">
+                    <div className="relative aspect-video">
+                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <canvas ref={canvasRef} className="hidden"></canvas>
+                  {/* Solo botón para capturar foto */}
+                  <div className="mt-4">
+                    {isScanning && (
+                      <button
+                        onClick={capturePhoto}
+                        className="w-full bg-institutional-yellow text-gray-800 px-6 py-4 rounded-xl font-bold text-lg  transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-blue "
+                      >
+                        <i data-lucide="camera" style={{width:24,height:24}}></i>
+                        Capturar Foto
+                      </button>
+                    )}
+                  </div>
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border-2 border-institutional-blue">
+                    <p className="text-sm text-institutional-blue text-center flex items-center justify-center gap-2">
+                      <i data-lucide="info" style={{width:18,height:18}}></i>
+                      La cámara escanea automáticamente. También puedes capturar una foto para revisarla.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Visor de imagen capturada */}
+                  <div className="mb-6">
+                    <div className="relative bg-black rounded-xl overflow-hidden border-4 border-institutional-yellow shadow-2xl">
+                      <img src={capturedImage} alt="Imagen capturada" className="w-full h-auto" />
+                      <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                        <i data-lucide="check" style={{width:16,height:16}}></i>
+                        Capturada
+                      </div>
+                    </div>
+                  </div>
+                  {/* Botones de acción para imagen capturada */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={retakePhoto}
+                      className="flex-1 bg-gray-500 text-white px-6 py-4 rounded-xl font-semibold text-lg  transition-all shadow-lg flex items-center justify-center gap-2 "
+                    >
+                      <i data-lucide="rotate-ccw" style={{width:22,height:22}}></i>
+                      Tomar otra foto
+                    </button>
+                    <button
+                      onClick={processCapturedImage}
+                      className="flex-1 bg-institutional-blue text-white px-6 py-4 rounded-xl font-semibold text-lg  transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-yellow "
+                    >
+                      <i data-lucide="scan" style={{width:22,height:22}}></i>
+                      Procesar QR
+                    </button>
+                  </div>
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border-2 border-institutional-blue">
+                    <p className="text-sm text-institutional-blue text-center flex items-center justify-center gap-2">
+                      <i data-lucide="check-circle" style={{width:18,height:18}}></i>
+                      Verifica que el código QR sea visible y presiona "Procesar QR"
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    function ManualInput({ onSubmit, onClose }) {
+      const [code, setCode] = useState('');
+      useEffect(() => {
+        if (window.lucide) window.lucide.replace();
+      }, []);
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 ">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow ">
+            <div className="bg-institutional-blue p-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Ingreso Manual</h2>
+              <button onClick={onClose} className="text-white  rounded-lg p-2 "><i data-lucide="x" style={{width:24,height:24}}></i></button>
+            </div>
+            <div className="p-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Buscar por nombre, curso o ID</label>
+              <input type="text" value={code} onChange={(e)=>setCode(e.target.value)} placeholder="Ej: Juan Pérez, 1A, o ID del estudiante"
+                className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow focus:border-institutional-yellow mb-4 transition-all"
+                onKeyPress={(e)=> e.key==='Enter' && onSubmit(code.trim())}
+              />
+              <div className="flex gap-3">
+                <button onClick={onClose} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold  ">Cancelar</button>
+                <button onClick={()=>onSubmit(code.trim())} className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold  ">Buscar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    function StudentModal({ student, onConfirm, onClose, isSubmitting, userData }) {
+      const recordedBy = userData?.nombreCompletoInspector || '';
+      const ecuadorDateTime = getEcuadorDateTime();
+      const handleConfirm = () => {
+        if (recordedBy.trim()) {
+          onConfirm(recordedBy);
+        } else {
+          alert('Error: No se pudo identificar al inspector');
+        }
+      };
+      useEffect(()=> { if (window.lucide) window.lucide.replace(); }, [student, isSubmitting]);
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 ">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border-4 border-institutional-yellow max-h-[90vh] overflow-y-auto ">
+            <div className="bg-institutional-yellow p-6 relative">
+              <button onClick={onClose} className="absolute top-4 right-4 text-gray-700  rounded-lg p-2 " disabled={isSubmitting}><i data-lucide="x" style={{width:24,height:24}}></i></button>
+              <div className="flex items-center gap-3 text-gray-800">
+                <div className="bg-white rounded-full p-3 "><i data-lucide="user" style={{width:32,height:32}} className="text-institutional-blue"></i></div>
+                <div>
+                  <h2 className="text-2xl font-bold">Registro de Atraso</h2>
+                  <p className="text-sm opacity-80">Confirmar información del estudiante</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg ">
+                <div className="flex items-center gap-2 mb-2">
+                  <i data-lucide="user" style={{width:18,height:18}} className="text-institutional-blue"></i>
+                  <span className="font-semibold text-gray-700">Nombre Completo</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">{student['Nombre completo estudiante']}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg border-2 border-institutional-blue  transition-all">
+                  <span className="text-sm text-gray-600">Curso</span>
+                  <p className="font-semibold text-gray-900">{student.Curso}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg border-2 border-institutional-blue  transition-all">
+                  <span className="text-sm text-gray-600">Fecha</span>
+                  <p className="font-semibold text-gray-900">{ecuadorDateTime.displayDate}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg border-2 border-institutional-blue  transition-all">
+                  <span className="text-sm text-gray-600">Hora</span>
+                  <p className="font-semibold text-gray-900">{ecuadorDateTime.timeString}</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Registrado por</label>
+                <div className="w-full border-2 border-institutional-yellow bg-yellow-50 rounded-lg p-3 flex items-center gap-2">
+                  <i data-lucide="shield-check" style={{width:20,height:20}} className="text-gray-700"></i>
+                  <span className="font-semibold text-gray-800">{recordedBy}</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 p-6 flex gap-3">
+              <button onClick={onClose} disabled={isSubmitting} className="flex-1 bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold  flex items-center justify-center gap-2 ">
+                <i data-lucide="x" style={{width:20,height:20}}></i> Cerrar
+              </button>
+              <button onClick={handleConfirm} disabled={isSubmitting} className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold  flex items-center justify-center gap-2 ">
+                <i data-lucide="check-circle" style={{width:20,height:20}}></i> {isSubmitting ? 'Guardando...' : 'Confirmar Atraso'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    function FileViewerModal({ fileData, onClose }) {
+      useEffect(() => { if (window.lucide) window.lucide.replace(); }, []);
+      const handleDownload = () => {
+        if (!fileData || !fileData.data) return;
+        const link = document.createElement('a');
+        link.href = fileData.data;
+        link.download = fileData.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+      const isImage = fileData && fileData.type && fileData.type.startsWith('image/');
+      const isPDF = fileData && fileData.type && fileData.type === 'application/pdf';
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 ">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-4 border-institutional-yellow  relative">
+            {/* Botón X para cerrar - Posicionado absolutamente */}
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2  z-20"
+              style={{width: '40px', height: '40px', boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
+              title="Cerrar"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div className="bg-institutional-blue p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white">
+                <i data-lucide="file-text" style={{width:24,height:24}}></i>
+                <h2 className="text-xl font-bold">Archivo Adjunto</h2>
+              </div>
+            </div>
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="bg-blue-50 border-2 border-institutional-blue rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-institutional-blue rounded-lg p-3">
+                      <i data-lucide={isImage ? 'image' : isPDF ? 'file-text' : 'file'} style={{width:24,height:24}} className="text-white"></i>
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">{fileData.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {fileData.size ? `${(fileData.size / 1024).toFixed(2)} KB` : 'Tamaño desconocido'}
+                      </p>
+                    </div>
+                  </div>
+                  {fileData.data && (
+                    <button
+                      onClick={handleDownload}
+                      className="bg-institutional-yellow text-gray-800 px-4 py-2 rounded-lg font-semibold  flex items-center gap-2 "
+                    >
+                      <i data-lucide="download" style={{width:18,height:18}}></i>
+                      Descargar
+                    </button>
+                  )}
+                </div>
+              </div>
+              {fileData.data ? (
+                <div className="border-4 border-institutional-yellow rounded-xl overflow-hidden bg-gray-100">
+                  {isImage ? (
+                    <img src={fileData.data} alt={fileData.name} className="w-full h-auto" />
+                  ) : isPDF ? (
+                    <iframe
+                      src={fileData.data}
+                      className="w-full h-[600px]"
+                      title={fileData.name}
+                    />
+                  ) : (
+                    <div className="p-8 text-center">
+                      <i data-lucide="file" style={{width:64,height:64}} className="mx-auto mb-4 text-gray-400"></i>
+                      <p className="text-gray-600">Vista previa no disponible para este tipo de archivo.</p>
+                      <p className="text-sm text-gray-500 mt-2">Usa el botón "Descargar" para ver el archivo.</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="border-4 border-institutional-yellow rounded-xl p-8 text-center bg-gray-50">
+                  <i data-lucide="alert-circle" style={{width:64,height:64}} className="mx-auto mb-4 text-orange-400"></i>
+                  <p className="text-gray-600">Este archivo fue registrado en el formato antiguo.</p>
+                  <p className="text-sm text-gray-500 mt-2">Solo se guardó el nombre del archivo, no su contenido.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    function JustificationModal({ record, onClose, onSubmit, isSubmitting }) {
+      const [justification, setJustification] = useState(record.motivo_atraso || '');
+      const [selectedFile, setSelectedFile] = useState(null);
+      const handleSubmit = async () => {
+        if (!justification.trim()) {
+          alert('Por favor ingresa el motivo de justificación');
+          return;
+        }
+        onSubmit(justification, selectedFile);
+      };
+      useEffect(() => { if (window.lucide) window.lucide.replace(); }, [selectedFile]);
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 ">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[90vh] overflow-y-auto border-4 border-institutional-yellow ">
+            <div className="bg-institutional-blue p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Justificar Atraso</h2>
+                <button onClick={onClose} disabled={isSubmitting} className="text-white  rounded-lg p-2 ">
+                  <i data-lucide="x" style={{width:24,height:24}}></i>
+                </button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg ">
+                <div className="flex items-center gap-2 mb-2">
+                  <i data-lucide="user" style={{width:18,height:18}} className="text-institutional-blue"></i>
+                  <span className="font-semibold text-gray-700">Estudiante</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">{record['Nombre completo estudiante']}</p>
+                <div className="mt-2 text-sm text-gray-600">
+                  <p><strong>Curso:</strong> {record.Curso}</p>
+                  <p><strong>Fecha:</strong> {new Date(record.fecha_atraso + 'T00:00:00').toLocaleDateString('es-ES')}</p>
+                  <p><strong>Hora:</strong> {record.hora_llegada}</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Motivo de Justificación *</label>
+                <textarea
+                  value={justification}
+                  onChange={(e) => setJustification(e.target.value)}
+                  placeholder="Ingrese el motivo de la justificación..."
+                  className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow resize-none transition-all"
+                  rows={4}
+                  disabled={isSubmitting}
+                />
+              </div>
+              <FileUpload onFileSelect={setSelectedFile} selectedFile={selectedFile} />
+            </div>
+            <div className="bg-gray-50 p-6 flex gap-3">
+              <button
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="flex-1 bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold  "
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting || !justification.trim()}
+                className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold  disabled:bg-gray-400 flex items-center justify-center gap-2 "
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="spinner rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <i data-lucide="check-circle" style={{width:20,height:20}}></i>
+                    Justificar
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    function AttendanceHistory({ records, loading, onRefresh, userRole, userData, onJustify }) {
+      const [searchTerm, setSearchTerm] = useState('');
+      const [dateFilter, setDateFilter] = useState('');
+      const [statusFilter, setStatusFilter] = useState('all');
+      const [viewingFile, setViewingFile] = useState(null);
+      const normalizeDate = (dateString) => {
+        if (!dateString) return '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
+        return dateString.split('T')[0];
+      };
+      const isJustified = (record) => {
+        return record.motivo_atraso && (
+          record.motivo_atraso.includes('[ARCHIVO_ADJUNTO:') ||
+          record.motivo_atraso.includes('[Archivo adjunto:')
+        );
+      };
+      const getAttachedFile = (motivo) => {
+        if (!motivo) return null;
+        const newFormatMatch = motivo.match(/\[ARCHIVO_ADJUNTO:({.*?})\]/);
+        if (newFormatMatch) {
+          try {
+            return JSON.parse(newFormatMatch[1]);
+          } catch (e) {
+            console.error('Error al parsear archivo adjunto:', e);
+            return null;
+          }
+        }
+        const oldFormatMatch = motivo.match(/\[Archivo adjunto: (.*?)\]/);
+        if (oldFormatMatch) {
+          return { name: oldFormatMatch[1], data: null };
+        }
+        return null;
+      };
+      const getCleanMotivo = (motivo) => {
+        if (!motivo) return 'Sin especificar';
+        return motivo.replace(/\[ARCHIVO_ADJUNTO:.*?\]/, '').replace(/\[Archivo adjunto:.*?\]/, '').trim() || 'Sin especificar';
+      };
+      const filteredRecords = records.filter(record => {
+        const matchesSearch = !searchTerm ||
+          (record['Nombre completo estudiante']?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           record.Curso?.toLowerCase().includes(searchTerm.toLowerCase()));
+        let matchesDate = true;
+        if (dateFilter) {
+          const recordDateStr = normalizeDate(record.fecha_atraso);
+          matchesDate = recordDateStr === dateFilter;
+        }
+        let matchesStatus = true;
+        if (statusFilter === 'confirmado') {
+          matchesStatus = record.estado === 'confirmado' && !isJustified(record);
+        } else if (statusFilter === 'justificado') {
+          matchesStatus = isJustified(record);
+        }
+        const hasValidStatus = record.estado === 'confirmado';
+        if (userRole === 'estudiante' && userData) {
+          const studentNameInRecord = record['Nombre completo estudiante'];
+          const loggedInStudentName = userData.nombre_completo;
+          const matchesStudent = namesMatch(studentNameInRecord, loggedInStudentName);
+          return matchesSearch && matchesDate && matchesStatus && hasValidStatus && matchesStudent;
+        }
+        return matchesSearch && matchesDate && matchesStatus && hasValidStatus;
+      });
+      useEffect(()=> { if (window.lucide) window.lucide.replace(); }, [records, searchTerm, dateFilter, statusFilter, loading]);
+      const clearFilters = () => {
+        setSearchTerm('');
+        setDateFilter('');
+        setStatusFilter('all');
+      };
+      return (
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-4 border-institutional-yellow ">
+          <div className="bg-institutional-yellow p-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3 text-gray-800">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>
+                <h2 className="text-2xl font-bold">Historial de Atrasos</h2>
+              </div>
+              <button onClick={onRefresh} className="bg-gradient-to-r from-white to-gray-50 text-institutional-blue px-5 py-2.5 rounded-lg font-bold   flex items-center gap-2 border-2 border-institutional-blue  shadow-md transition-all">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"></path></svg>
+                Actualizar
+              </button>
+            </div>
+          </div>
+          <div className="p-6 border-b-2 border-institutional-yellow bg-gray-50">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e)=>setSearchTerm(e.target.value)}
+                placeholder="Buscar por nombre o curso"
+                className="border-2 border-institutional-blue rounded-lg p-2 focus:ring-2 focus:ring-institutional-yellow transition-all"
+              />
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e)=>setDateFilter(e.target.value)}
+                className="border-2 border-institutional-blue rounded-lg p-2 focus:ring-2 focus:ring-institutional-yellow transition-all"
+              />
+              <select
+                value={statusFilter}
+                onChange={(e)=>setStatusFilter(e.target.value)}
+                className="border-2 border-institutional-blue rounded-lg p-2 focus:ring-2 focus:ring-institutional-yellow transition-all"
+              >
+                <option value="all">Todos los estados</option>
+                <option value="confirmado">Confirmados</option>
+                <option value="justificado">Justificados</option>
+              </select>
+              <button
+                onClick={clearFilters}
+                className="bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 px-4 py-2 rounded-lg font-bold   flex items-center justify-center gap-2  shadow-sm border-2 border-gray-400"
+              >
+                <i data-lucide="filter-x" style={{width:20,height:20}}></i> Limpiar
+              </button>
+            </div>
+          </div>
+          <div className="p-6">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="spinner rounded-full h-12 w-12 border-b-4 border-institutional-blue mx-auto"></div>
+                <p className="mt-4 text-gray-600">Cargando historial...</p>
+              </div>
+            ) : (
+              <>
+                <div className="text-sm text-gray-600 mb-4 flex items-center gap-2 ">
+                  <i data-lucide="database" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                  Mostrando {filteredRecords.length} de {records.filter(r => r.estado === 'confirmado').length} registros
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-institutional-blue text-white"><tr>
+                      <th className="text-left p-3 text-sm font-semibold">Fecha</th>
+                      <th className="text-left p-3 text-sm font-semibold">Estudiante</th>
+                      <th className="text-left p-3 text-sm font-semibold">Curso</th>
+                      <th className="text-left p-3 text-sm font-semibold">Hora</th>
+                      <th className="text-left p-3 text-sm font-semibold">Motivo</th>
+                      {userRole === 'inspeccion' && <th className="text-left p-3 text-sm font-semibold">Registrado por</th>}
+                      <th className="text-left p-3 text-sm font-semibold">Estado</th>
+                      {userRole === 'inspeccion' && <th className="text-left p-3 text-sm font-semibold">Acciones</th>}
+                    </tr></thead>
+                    <tbody>
+                      {filteredRecords.length === 0 ? (
+                        <tr><td colSpan={userRole === 'inspeccion' ? '8' : '6'} className="text-center py-8 text-gray-500">
+                          <i data-lucide="search-x" style={{width:48,height:48}} className="mx-auto mb-2 text-gray-300 "></i>
+                          <p>No se encontraron registros de atrasos</p>
+                        </td></tr>
+                      ) : (
+                        filteredRecords.map((record, index) => (
+                          <tr key={record.N || index} className="border-b-2 border-gray-100  transition-all">
+                            <td className="p-3 text-sm">{new Date(record.fecha_atraso + 'T00:00:00').toLocaleDateString('es-ES')}</td>
+                            <td className="p-3 text-sm font-medium">{record['Nombre completo estudiante']}</td>
+                            <td className="p-3 text-sm">{record.Curso}</td>
+                            <td className="p-3 text-sm">
+                              <span className="flex items-center gap-1">
+                                <i data-lucide="clock" style={{width:14,height:14}} className="text-institutional-blue"></i>
+                                {record.hora_llegada || 'N/A'}
+                              </span>
+                            </td>
+                            <td className="p-3 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <span>{getCleanMotivo(record.motivo_atraso)}</span>
+                                {getAttachedFile(record.motivo_atraso) && (
+                                  <button
+                                    onClick={() => setViewingFile(getAttachedFile(record.motivo_atraso))}
+                                    className="bg-institutional-blue text-white px-2 py-1 rounded text-xs font-semibold  flex items-center gap-1 "
+                                    title="Ver archivo adjunto"
+                                  >
+                                    <i data-lucide="paperclip" style={{width:12,height:12}}></i>
+                                    Ver archivo
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            {userRole === 'inspeccion' && <td className="p-3 text-sm text-gray-600">{record.registrado_por || 'N/A'}</td>}
+                            <td className="p-3">
+                              {isJustified(record) ? (
+                                <span className="inline-flex items-center gap-1 bg-institutional-blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                  <i data-lucide="file-check" style={{width:14,height:14}}></i> Justificado
+                                </span>
+                              ) : record.estado === 'confirmado' ? (
+                                <span className="inline-flex items-center gap-1 bg-institutional-yellow text-gray-800 px-3 py-1 rounded-full text-xs font-semibold border-2 border-institutional-blue">
+                                  <i data-lucide="alert-circle" style={{width:14,height:14}}></i> Confirmado
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                  <i data-lucide="clock" style={{width:14,height:14}}></i> Pendiente
+                                </span>
+                              )}
+                            </td>
+                            {userRole === 'inspeccion' && (
+                              <td className="p-3">
+                                {!isJustified(record) ? (
+                                  <button
+                                    onClick={() => onJustify(record)}
+                                    className="bg-institutional-blue text-white px-3 py-1 rounded-lg text-xs font-semibold  flex items-center gap-1 "
+                                  >
+                                    <i data-lucide="file-edit" style={{width:12,height:12}}></i>
+                                    Justificar
+                                  </button>
+                                ) : (
+                                  <div className="justified-badge inline-flex items-center gap-2 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg  ">
+                                    <div className="justified-badge-icon rounded-full p-1">
+                                      <i data-lucide="badge-check" style={{width:16,height:16}} className="text-emerald-600"></i>
+                                    </div>
+                                    <span className="tracking-wide" style={{textShadow: '0 1px 2px rgba(0,0,0,0.3)'}}>JUSTIFICADO</span>
+                                  </div>
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+          {viewingFile && <FileViewerModal fileData={viewingFile} onClose={() => setViewingFile(null)} />}
+        </div>
+      );
+    }
+    function App(){
       const [userRole, setUserRole] = useState(null);
       const [userEmail, setUserEmail] = useState('');
       const [userData, setUserData] = useState(null);
-      const [records, setRecords] = useState([]);
-      const [loading, setLoading] = useState(false);
+      const [view, setView] = useState('scanner');
       const [showScanner, setShowScanner] = useState(false);
       const [showManualInput, setShowManualInput] = useState(false);
-      const [searchTerm, setSearchTerm] = useState('');
       const [selectedStudent, setSelectedStudent] = useState(null);
       const [isSubmitting, setIsSubmitting] = useState(false);
       const [notification, setNotification] = useState(null);
-      const [activeTab, setActiveTab] = useState('historial');
-      const [showJustifyModal, setShowJustifyModal] = useState(false);
+      const [records, setRecords] = useState([]);
+      const [loading, setLoading] = useState(false);
       const [justificationRecord, setJustificationRecord] = useState(null);
-      const [justificationReason, setJustificationReason] = useState('');
-      const [justificationFile, setJustificationFile] = useState(null);
-      const videoRef = useRef(null);
-      const canvasRef = useRef(null);
-      const scannerInterval = useRef(null);
-      const showNotification = (type, message) => {
-        setNotification({ type, message });
-        setTimeout(() => setNotification(null), 5000);
-      };
-      const handleLogin = (role, email, data) => {
+      const handleLogin = (role, email, user) => {
         setUserRole(role);
         setUserEmail(email);
-        setUserData(data);
-        loadAttendanceRecords();
+        setUserData(user);
+        if (role === 'estudiante') {
+          setView('history');
+        }
       };
       const handleLogout = () => {
         setUserRole(null);
         setUserEmail('');
         setUserData(null);
-        setRecords([]);
+        setView('scanner');
       };
-      const startScanner = async () => {
-        setShowScanner(true);
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            videoRef.current.setAttribute('playsinline', 'true');
-            videoRef.current.play();
-            scannerInterval.current = setInterval(scanQRCode, 200);
-          }
-        } catch (err) {
-          showNotification('error', 'No se pudo acceder a la cámara');
-          setShowScanner(false);
-        }
+      useEffect(()=> {
+        if (view === 'history') loadAttendanceRecords();
+      }, [view]);
+      useEffect(()=> {
+        if (window.lucide) window.lucide.replace();
+      }, [view, showScanner, showManualInput, selectedStudent, notification, records, userRole, justificationRecord]);
+      const showNotification = (type, message) => {
+        setNotification({type, message});
+        setTimeout(()=> setNotification(null), 4000);
       };
-      const stopScanner = () => {
-        if (scannerInterval.current) clearInterval(scannerInterval.current);
-        if (videoRef.current && videoRef.current.srcObject) {
-          const tracks = videoRef.current.srcObject.getTracks();
-          tracks.forEach(track => track.stop());
-        }
-        setShowScanner(false);
+      const handleJustification = (record) => {
+        setJustificationRecord(record);
       };
-      const scanQRCode = () => {
-        if (videoRef.current && canvasRef.current) {
-          const video = videoRef.current;
-          const canvas = canvasRef.current;
-          const context = canvas.getContext('2d');
-          if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvas.height = video.videoHeight;
-            canvas.width = video.videoWidth;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
-            if (code) {
-              stopScanner();
-              handleSearch(code.data);
-            }
-          }
-        }
-      };
-      const handleSearch = async (term) => {
+      const submitJustification = async (justification, file) => {
         setIsSubmitting(true);
         try {
-          const searchVal = term || searchTerm;
-          if (!searchVal || searchVal.trim() === '') {
+          let fileData = null;
+          if (file) {
+            const base64 = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            fileData = {
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              data: base64
+            };
+          }
+          const motivoTexto = fileData
+            ? `${justification} [ARCHIVO_ADJUNTO:${JSON.stringify(fileData)}]`
+            : justification;
+          const updateData = {
+            motivo_atraso: motivoTexto
+          };
+          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', updateData);
+          showNotification('success', 'Justificación guardada correctamente');
+          setJustificationRecord(null);
+          await loadAttendanceRecords();
+        } catch (err) {
+          console.error('Error al justificar:', err);
+          showNotification('error', 'Error al guardar la justificación: ' + err.message);
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
+      
+      
+      const findStudent = async (searchTerm) => {
+        try {
+          setIsSubmitting(true);
+          if (!searchTerm || searchTerm.trim() === '') {
             showNotification('error', 'Ingrese el nombre del estudiante');
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
             return;
           }
+
           let results = null;
-          const likePattern = encodeURIComponent(`%${searchVal}%`);
-          // BUSQUEDA CORREGIDA: Busca en la tabla atrasos donde fecha_atraso es NULL (catálogo)
+          // Usar % como comodines para ilike en PostgREST (no *)
+          const likePattern = encodeURIComponent(`%${searchTerm}%`);
+
+          // Buscar por nombre en registros base (fecha_atraso = NULL = catálogo de estudiantes)
           results = await supabaseRequest(
             `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
           );
+
+          // Si no encuentra por nombre, buscar por curso
           if (!results || results.length === 0) {
             results = await supabaseRequest(
               `atrasos?select=*&Curso=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
             );
           }
+
+          // Si el searchTerm es numérico, buscar por ID (columna N)
           if (!results || results.length === 0) {
-            const numericId = parseInt(searchVal);
+            const numericId = parseInt(searchTerm);
             if (!isNaN(numericId)) {
               results = await supabaseRequest(
                 `atrasos?select=*&N=eq.${numericId}&fecha_atraso=is.null&limit=1`
               );
             }
           }
+
+          // Fallback: buscar por nombre sin filtrar por fecha (cualquier registro)
           if (!results || results.length === 0) {
             results = await supabaseRequest(
               `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&limit=5`
             );
           }
+
           if (!results || results.length === 0) {
             showNotification('error', 'Estudiante no encontrado en la base de datos');
             setIsSubmitting(false);
@@ -797,13 +1496,17 @@
             setShowManualInput(false);
             return;
           }
+
           const student = results[0];
+
+          // Verificar duplicado hoy
           const ecuadorDateTime = getEcuadorDateTime();
           const today = ecuadorDateTime.dateString;
           const studentNameEncoded = encodeURIComponent(student['Nombre completo estudiante']);
           const existingRecords = await supabaseRequest(
             `atrasos?select=*&Nombre completo estudiante=eq.${studentNameEncoded}&fecha_atraso=eq.${today}&estado=eq.confirmado`
           );
+
           if (existingRecords && existingRecords.length > 0) {
             showNotification('error', 'Este estudiante ya tiene un registro de atraso confirmado hoy');
             setIsSubmitting(false);
@@ -811,6 +1514,7 @@
             setShowManualInput(false);
             return;
           }
+
           const studentToConfirm = {
             'Nombre completo estudiante': student['Nombre completo estudiante'],
             'Curso': student.Curso,
@@ -828,6 +1532,7 @@
           setShowManualInput(false);
         }
       };
+      
       const handleConfirmAttendance = async (recordedBy) => {
         setIsSubmitting(true);
         try {
@@ -841,7 +1546,6 @@
             registrado_por: recordedBy,
             estado: 'confirmado'
           };
-          // REGISTRO CORREGIDO: Inserta un nuevo registro de atraso
           await supabaseRequest(`atrasos`, 'POST', newRecord);
           showNotification('success', `Atraso confirmado para ${selectedStudent['Nombre completo estudiante']}`);
           setSelectedStudent(null);
@@ -856,7 +1560,6 @@
       const loadAttendanceRecords = async () => {
         setLoading(true);
         try {
-          // Carga solo los registros que TIENEN fecha (los atrasos reales)
           const allRecords = await supabaseRequest('atrasos?select=*&fecha_atraso=not.is.null&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
           setRecords(allRecords || []);
         } catch (err) {
@@ -865,30 +1568,6 @@
           setRecords([]);
         } finally {
           setLoading(false);
-        }
-      };
-      const handleJustify = async () => {
-        if (!justificationReason.trim()) {
-          showNotification('error', 'Debe ingresar un motivo de justificación');
-          return;
-        }
-        setIsSubmitting(true);
-        try {
-          const updateData = {
-            motivo_atraso: justificationReason,
-            estado: 'justificado',
-            fecha_justificacion: new Date().toISOString()
-          };
-          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', updateData);
-          showNotification('success', 'Atraso justificado correctamente');
-          setShowJustifyModal(false);
-          setJustificationReason('');
-          setJustificationFile(null);
-          await loadAttendanceRecords();
-        } catch (err) {
-          showNotification('error', 'Error al justificar: ' + err.message);
-        } finally {
-          setIsSubmitting(false);
         }
       };
       if (!userRole) {
@@ -914,344 +1593,87 @@
                   onClick={handleLogout}
                   className="bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 px-6 py-2.5 rounded-lg font-bold   flex items-center gap-2 border-2 border-white  shadow-lg transition-all"
                 >
-                  <i data-lucide="log-out" style={{width:20,height:20}}></i>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                   <span>Cerrar Sesión</span>
                 </button>
               </div>
             </div>
           </header>
-          <main className="container mx-auto px-4 py-8">
-            {notification && (
-              <Notification
-                type={notification.type}
-                message={notification.message}
-                onClose={() => setNotification(null)}
-              />
-            )}
-            {userRole === 'inspeccion' ? (
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <button
-                    onClick={startScanner}
-                    className="bg-white p-8 rounded-2xl shadow-xl border-2 border-institutional-blue hover:border-institutional-yellow transition-all group flex flex-col items-center gap-4"
-                  >
-                    <div className="bg-blue-50 p-6 rounded-full group-hover:bg-yellow-50 transition-colors">
-                      <i data-lucide="qr-code" style={{width:48,height:48}} className="text-institutional-blue group-hover:text-institutional-yellow-dark"></i>
-                    </div>
-                    <span className="text-xl font-bold text-institutional-blue">Escanear Código QR</span>
+          {notification && (
+            <div className="fixed top-4 right-4 z-50">
+              <div className={`rounded-lg shadow-2xl p-4 flex items-center gap-3 max-w-md border-4 ${
+                notification.type === 'success'
+                  ? 'bg-institutional-blue text-white border-institutional-yellow'
+                  : 'bg-red-500 text-white border-red-700'
+              }`}>
+                <i data-lucide={notification.type === 'success' ? 'check-circle' : 'alert-circle'} style={{width:24,height:24}}></i>
+                <span className="font-semibold">{notification.message}</span>
+              </div>
+            </div>
+          )}
+          {userRole === 'inspeccion' && (
+            <nav className="bg-white shadow-md sticky top-0 z-40 border-b-4 border-institutional-yellow">
+              <div className="container mx-auto px-4">
+                <div className="flex justify-center gap-3 py-4">
+                  <button onClick={()=>setView('scanner')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all  ${view==='scanner' ? 'bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 shadow-lg border-2 border-institutional-blue' : 'bg-gray-100 text-gray-600  border-2 border-gray-300'}`}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                    Registrar Atraso
                   </button>
-                  <button
-                    onClick={() => setShowManualInput(true)}
-                    className="bg-white p-8 rounded-2xl shadow-xl border-2 border-institutional-blue hover:border-institutional-yellow transition-all group flex flex-col items-center gap-4"
-                  >
-                    <div className="bg-blue-50 p-6 rounded-full group-hover:bg-yellow-50 transition-colors">
-                      <i data-lucide="keyboard" style={{width:48,height:48}} className="text-institutional-blue group-hover:text-institutional-yellow-dark"></i>
-                    </div>
-                    <span className="text-xl font-bold text-institutional-blue">Ingreso Manual</span>
+                  <button onClick={()=>setView('history')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all  ${view==='history' ? 'bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 shadow-lg border-2 border-institutional-blue' : 'bg-gray-100 text-gray-600  border-2 border-gray-300'}`}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4  4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>
+                    Historial
                   </button>
                 </div>
-                <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
-                  <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-institutional-blue flex items-center gap-2">
-                      <i data-lucide="list" style={{width:24,height:24}}></i>
-                      Historial de Atrasos
-                    </h2>
-                    <button
-                      onClick={loadAttendanceRecords}
-                      className="text-institutional-blue hover:rotate-180 transition-all duration-500"
-                    >
-                      <i data-lucide="refresh-cw" style={{width:20,height:20}}></i>
+              </div>
+            </nav>
+          )}
+          <main className="container mx-auto px-4 py-8">
+            {view === 'scanner' && userRole === 'inspeccion' ? (
+              <div className="max-w-2xl mx-auto ">
+                <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border-4 border-institutional-yellow ">
+                  <div className="text-center mb-8">
+                    <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4 " />
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">Registrar Atraso Estudiantil</h2>
+                    <p className="text-gray-600">Selecciona un método para identificar al estudiante</p>
+                  </div>
+                  <div className="space-y-4">
+                    <button onClick={()=>setShowScanner(true)} className="w-full bg-institutional-blue text-white py-4 px-6 rounded-xl font-semibold  transition-all shadow-lg flex items-center justify-center gap-3 text-lg border-2 border-institutional-yellow ">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                      Escanear Código QR
+                    </button>
+                    <button onClick={()=>setShowManualInput(true)} className="w-full bg-institutional-yellow text-gray-800 py-4 px-6 rounded-xl font-semibold  transition-all shadow-lg flex items-center justify-center gap-3 text-lg border-2 border-institutional-blue ">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="17" x2="22" y2="17"></line></svg>
+                      Ingreso Manual
                     </button>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead className="bg-blue-50 text-institutional-blue uppercase text-xs font-bold">
-                        <tr>
-                          <th className="px-6 py-4">Estudiante</th>
-                          <th className="px-6 py-4">Curso</th>
-                          <th className="px-6 py-4">Fecha</th>
-                          <th className="px-6 py-4">Hora</th>
-                          <th className="px-6 py-4">Estado</th>
-                          <th className="px-6 py-4">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {loading ? (
-                          <tr>
-                            <td colSpan="6" className="px-6 py-12 text-center">
-                              <div className="spinner w-10 h-10 border-4 border-institutional-blue border-t-transparent rounded-full mx-auto"></div>
-                              <p className="mt-4 text-gray-500 font-medium">Cargando registros...</p>
-                            </td>
-                          </tr>
-                        ) : records.length === 0 ? (
-                          <tr>
-                            <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                              No hay registros de atrasos encontrados.
-                            </td>
-                          </tr>
-                        ) : (
-                          records.map((record) => (
-                            <tr key={record.N} className="hover:bg-gray-50 transition-colors">
-                              <td className="px-6 py-4 font-bold text-gray-800">{record['Nombre completo estudiante']}</td>
-                              <td className="px-6 py-4 text-gray-600">{record.Curso}</td>
-                              <td className="px-6 py-4 text-gray-600">{record.fecha_atraso}</td>
-                              <td className="px-6 py-4 font-semibold text-institutional-blue">{record.hora_llegada}</td>
-                              <td className="px-6 py-4">
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                                  record.estado === 'justificado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                }`}>
-                                  {record.estado || 'pendiente'}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4">
-                                {record.estado !== 'justificado' && (
-                                  <button
-                                    onClick={() => { setJustificationRecord(record); setShowJustifyModal(true); }}
-                                    className="text-institutional-blue hover:text-institutional-yellow-dark font-bold text-sm flex items-center gap-1"
-                                  >
-                                    <i data-lucide="edit-3" style={{width:16,height:16}}></i>
-                                    Justificar
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
+                  <div className="mt-8 p-4 bg-blue-50 rounded-lg border-2 border-institutional-blue">
+                    <p className="text-sm text-institutional-blue text-center flex items-center justify-center gap-2">
+                      <i data-lucide="info" style={{width:18,height:18}}></i>
+                      <strong>Nota:</strong> El sistema valida automáticamente que no existan registros duplicados del mismo día
+                    </p>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="max-w-4xl mx-auto space-y-8">
-                <div className="bg-white p-8 rounded-3xl shadow-2xl border-t-8 border-institutional-blue relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <i data-lucide="graduation-cap" style={{width:120,height:120}}></i>
-                  </div>
-                  <div className="flex items-center gap-6 mb-8">
-                    <div className="bg-blue-100 p-4 rounded-2xl">
-                      <i data-lucide="user" style={{width:48,height:48}} className="text-institutional-blue"></i>
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-black text-gray-800">{userData?.nombre_completo}</h2>
-                      <p className="text-institutional-blue font-bold text-lg">{userData?.curso_completo}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="bg-gray-50 p-6 rounded-2xl border-2 border-gray-100 text-center">
-                      <p className="text-gray-500 font-bold uppercase text-xs mb-2">Total Atrasos</p>
-                      <p className="text-4xl font-black text-institutional-blue">
-                        {records.filter(r => namesMatch(r['Nombre completo estudiante'], userData?.nombre_completo)).length}
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 p-6 rounded-2xl border-2 border-gray-100 text-center">
-                      <p className="text-gray-500 font-bold uppercase text-xs mb-2">Justificados</p>
-                      <p className="text-4xl font-black text-green-600">
-                        {records.filter(r => namesMatch(r['Nombre completo estudiante'], userData?.nombre_completo) && r.estado === 'justificado').length}
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 p-6 rounded-2xl border-2 border-gray-100 text-center">
-                      <p className="text-gray-500 font-bold uppercase text-xs mb-2">Pendientes</p>
-                      <p className="text-4xl font-black text-red-600">
-                        {records.filter(r => namesMatch(r['Nombre completo estudiante'], userData?.nombre_completo) && r.estado !== 'justificado').length}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                  <div className="bg-gray-50 px-6 py-4 border-b">
-                    <h3 className="text-xl font-bold text-institutional-blue flex items-center gap-2">
-                      <i data-lucide="history" style={{width:24,height:24}}></i>
-                      Mi Historial de Atrasos
-                    </h3>
-                  </div>
-                  <div className="divide-y divide-gray-100">
-                    {records.filter(r => namesMatch(r['Nombre completo estudiante'], userData?.nombre_completo)).length === 0 ? (
-                      <div className="p-12 text-center text-gray-500">
-                        <i data-lucide="smile" style={{width:48,height:48}} className="mx-auto mb-4 text-green-400"></i>
-                        <p className="text-lg font-bold">¡Excelente! No tienes atrasos registrados.</p>
-                      </div>
-                    ) : (
-                      records.filter(r => namesMatch(r['Nombre completo estudiante'], userData?.nombre_completo)).map((record) => (
-                        <div key={record.N} className="p-6 hover:bg-gray-50 transition-all flex justify-between items-center">
-                          <div>
-                            <p className="text-lg font-bold text-gray-800">{record.fecha_atraso}</p>
-                            <p className="text-institutional-blue font-semibold flex items-center gap-1">
-                              <i data-lucide="clock" style={{width:16,height:16}}></i>
-                              {record.hora_llegada}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${
-                              record.estado === 'justificado' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'
-                            }`}>
-                              {record.estado || 'pendiente'}
-                            </span>
-                            {record.motivo_atraso && (
-                              <p className="text-xs text-gray-500 mt-2 italic max-w-[200px]">"{record.motivo_atraso}"</p>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
+              <AttendanceHistory
+                records={records}
+                loading={loading}
+                onRefresh={loadAttendanceRecords}
+                userRole={userRole}
+                userData={userData}
+                onJustify={handleJustification}
+              />
             )}
           </main>
-          {/* Modales */}
-          {showScanner && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
-              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
-                <div className="p-6 border-b flex justify-between items-center bg-institutional-blue text-white">
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    <i data-lucide="camera" style={{width:24,height:24}}></i>
-                    Escaneando Código QR
-                  </h3>
-                  <button onClick={stopScanner} className="hover:rotate-90 transition-all">
-                    <i data-lucide="x" style={{width:28,height:28}}></i>
-                  </button>
-                </div>
-                <div className="relative aspect-square bg-black">
-                  <video ref={videoRef} className="w-full h-full object-cover"></video>
-                  <canvas ref={canvasRef} className="hidden"></canvas>
-                  <div className="absolute inset-0 border-[40px] border-black/40 pointer-events-none">
-                    <div className="w-full h-full border-4 border-institutional-yellow rounded-2xl animate-pulse"></div>
-                  </div>
-                </div>
-                <div className="p-6 text-center">
-                  <p className="text-gray-600 font-medium">Coloque el código QR del estudiante frente a la cámara</p>
-                </div>
-              </div>
-            </div>
-          )}
-          {showManualInput && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="p-6 border-b flex justify-between items-center bg-institutional-blue text-white">
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    <i data-lucide="search" style={{width:24,height:24}}></i>
-                    Búsqueda Manual
-                  </h3>
-                  <button onClick={() => setShowManualInput(false)} className="hover:rotate-90 transition-all">
-                    <i data-lucide="x" style={{width:28,height:28}}></i>
-                  </button>
-                </div>
-                <div className="p-8 space-y-6">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Nombre del Estudiante</label>
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Ej: Juan Pérez"
-                      className="w-full border-2 border-gray-200 rounded-2xl p-4 focus:border-institutional-blue focus:ring-0 transition-all font-bold"
-                      onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                    />
-                  </div>
-                  <button
-                    onClick={() => handleSearch()}
-                    disabled={isSubmitting}
-                    className="w-full bg-institutional-yellow hover:bg-institutional-yellow-dark text-gray-800 py-4 rounded-2xl font-black text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3"
-                  >
-                    {isSubmitting ? <div className="spinner w-6 h-6 border-4 border-gray-800 border-t-transparent rounded-full"></div> : 'BUSCAR ESTUDIANTE'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          {selectedStudent && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom-8 duration-300">
-                <div className="bg-institutional-blue p-8 text-white text-center relative">
-                  <div className="bg-white p-4 rounded-2xl shadow-lg inline-block mb-4 border-2 border-institutional-yellow">
-                    <i data-lucide="user-check" style={{width:48,height:48}} className="text-institutional-blue"></i>
-                  </div>
-                  <h3 className="text-2xl font-black leading-tight">{selectedStudent['Nombre completo estudiante']}</h3>
-                  <p className="text-yellow-200 font-bold mt-2 uppercase tracking-widest text-xs">{selectedStudent.Curso}</p>
-                </div>
-                <div className="p-8 space-y-4">
-                  <div className="bg-blue-50 p-4 rounded-2xl border-2 border-blue-100 flex items-center gap-4">
-                    <i data-lucide="clock" className="text-institutional-blue" style={{width:24,height:24}}></i>
-                    <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase">Hora de Llegada</p>
-                      <p className="text-xl font-black text-institutional-blue">{getEcuadorDateTime().timeString}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleConfirmAttendance(userData?.nombreCompletoInspector)}
-                    disabled={isSubmitting}
-                    className="w-full bg-institutional-blue hover:bg-institutional-blue-dark text-white py-5 rounded-2xl font-black text-xl shadow-2xl shadow-blue-200 transition-all active:scale-95"
-                  >
-                    {isSubmitting ? 'GUARDANDO...' : 'CONFIRMAR REGISTRO'}
-                  </button>
-                  <button
-                    onClick={() => setSelectedStudent(null)}
-                    className="w-full text-gray-400 font-bold py-2 hover:text-red-500 transition-colors"
-                  >
-                    CANCELAR
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          {showJustifyModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="p-6 border-b flex justify-between items-center bg-institutional-blue text-white">
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    <i data-lucide="edit-3" style={{width:24,height:24}}></i>
-                    Justificar Atraso
-                  </h3>
-                  <button onClick={() => setShowJustifyModal(false)} className="hover:rotate-90 transition-all">
-                    <i data-lucide="x" style={{width:28,height:28}}></i>
-                  </button>
-                </div>
-                <div className="p-8 space-y-6">
-                  <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <p className="text-xs font-bold text-gray-400 uppercase mb-1">Estudiante</p>
-                    <p className="text-lg font-black text-gray-800">{justificationRecord?.['Nombre completo estudiante']}</p>
-                    <p className="text-sm text-institutional-blue font-bold">{justificationRecord?.fecha_atraso} - {justificationRecord?.hora_llegada}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Motivo de Justificación *</label>
-                    <textarea
-                      value={justificationReason}
-                      onChange={(e) => setJustificationReason(e.target.value)}
-                      placeholder="Ej: Cita médica, problema de transporte..."
-                      className="w-full border-2 border-gray-200 rounded-2xl p-4 focus:border-institutional-blue focus:ring-0 transition-all font-medium h-32 resize-none"
-                    ></textarea>
-                  </div>
-                  <FileUpload onFileSelect={setJustificationFile} selectedFile={justificationFile} />
-                  <button
-                    onClick={handleJustify}
-                    disabled={isSubmitting}
-                    className="w-full bg-institutional-yellow hover:bg-institutional-yellow-dark text-gray-800 py-4 rounded-2xl font-black text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3"
-                  >
-                    {isSubmitting ? <div className="spinner w-6 h-6 border-4 border-gray-800 border-t-transparent rounded-full"></div> : 'GUARDAR JUSTIFICACIÓN'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          <footer className="container mx-auto px-4 py-12 text-center">
-            <div className="flex justify-center items-center gap-4 mb-4 opacity-30">
-              <div className="h-px w-12 bg-gray-400"></div>
-              <img src={LOGO_URL} alt="Logo" className="w-8 h-8 grayscale" />
-              <div className="h-px w-12 bg-gray-400"></div>
-            </div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">
-              © 2025 Unidad Educativa Particular "De la Cuadra"
-            </p>
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-              Sistema de Gestión de Asistencia e Inspección
-            </p>
-          </footer>
+          {showScanner && <QRScanner onScan={findStudent} onClose={()=>setShowScanner(false)} />}
+          {showManualInput && <ManualInput onSubmit={findStudent} onClose={()=>setShowManualInput(false)} />}
+          {selectedStudent && <StudentModal student={selectedStudent} onConfirm={handleConfirmAttendance} onClose={()=>setSelectedStudent(null)} isSubmitting={isSubmitting} userData={userData} />}
+          {justificationRecord && <JustificationModal record={justificationRecord} onClose={()=>setJustificationRecord(null)} onSubmit={submitJustification} isSubmitting={isSubmitting} />}
         </div>
       );
     }
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
-  </script>
+</script>
 </body>
 </html>
