@@ -165,15 +165,18 @@
       return matchingWords.length >= 2;
     };
     const supabaseRequest = async (endpoint, method = 'GET', body = null) => {
-      const options = {
-        method,
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
-        }
+      const headers = {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
       };
+      // Solo pedir retorno de datos en POST (INSERT) y GET; en PATCH/PUT no usar
+      // "Prefer: return=representation" porque dispara la verificación de replica identity
+      // y falla si la tabla no tiene PRIMARY KEY reconocido por Realtime.
+      if (method === 'POST') {
+        headers['Prefer'] = 'return=representation';
+      }
+      const options = { method, headers };
       if (body) options.body = JSON.stringify(body);
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, options);
       if (!res.ok) {
@@ -181,6 +184,8 @@
         try { const j = await res.json(); errText = j.message || j.error || errText; } catch {}
         throw new Error(errText);
       }
+      // PATCH/PUT devuelven 204 No Content cuando no se pide representación
+      if (res.status === 204 || res.headers.get('content-length') === '0') return null;
       return res.json();
     };
     function FileUpload({ onFileSelect, selectedFile }) {
@@ -1160,6 +1165,7 @@
         return dateString.split('T')[0];
       };
       const isJustified = (record) => {
+        if (record.estado === 'justificado') return true;
         return record.motivo_atraso && (
           record.motivo_atraso.includes('[ARCHIVO_ADJUNTO:') ||
           record.motivo_atraso.includes('[Archivo adjunto:')
@@ -1201,7 +1207,7 @@
         } else if (statusFilter === 'justificado') {
           matchesStatus = isJustified(record);
         }
-        const hasValidStatus = record.estado === 'confirmado';
+        const hasValidStatus = record.estado === 'confirmado' || record.estado === 'justificado';
         if (userRole === 'estudiante' && userData) {
           const studentNameInRecord = record['Nombre completo estudiante'];
           const loggedInStudentName = userData.nombre_completo;
@@ -1437,7 +1443,10 @@
             ? `${justification} [ARCHIVO_ADJUNTO:${JSON.stringify(fileData)}]`
             : justification;
 
-          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', { motivo_atraso: motivoTexto });
+          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', {
+            motivo_atraso: motivoTexto,
+            estado: 'justificado'
+          });
 
           showNotification('success', 'Justificación guardada correctamente');
           setJustificationRecord(null);
@@ -1529,14 +1538,14 @@
 
           const student = results[0];
 
-          // ── Verificar si ya tiene atraso confirmado hoy
+          // ── Verificar si ya tiene atraso confirmado o justificado hoy
           const today = getEcuadorDateTime().dateString;
           const nameEnc = encodeURIComponent(student['Nombre completo estudiante']);
           const dup = await supabaseRequest(
-            `atrasos?select=*&${colNombre}=eq.${nameEnc}&fecha_atraso=eq.${today}&estado=eq.confirmado`
+            `atrasos?select=*&${colNombre}=eq.${nameEnc}&fecha_atraso=eq.${today}&estado=in.(confirmado,justificado)`
           );
           if (dup && dup.length > 0) {
-            showNotification('error', `${student['Nombre completo estudiante']} ya tiene atraso confirmado hoy`);
+            showNotification('error', `${student['Nombre completo estudiante']} ya tiene atraso registrado hoy`);
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
