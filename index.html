@@ -343,7 +343,10 @@
         try { const j = await res.json(); errText = j.message || j.error || errText; } catch {}
         throw new Error(errText);
       }
-      return res.json();
+      if (res.status === 204) return null;
+      const txt = await res.text();
+      if (!txt) return null;
+      return JSON.parse(txt);
     };
 
     // FileUpload Component (SOLO para justificación)
@@ -1546,8 +1549,25 @@
         return matchesSearch && matchesDate && matchesStatus && hasValidStatus;
       });
 
-      useEffect(()=> { if (window.lucide) window.lucide.replace(); }, [records, searchTerm, dateFilter, statusFilter, loading]);
+      // Deduplicar: si existe un registro "justificado" para el mismo estudiante+fecha+hora,
+      // ocultar el antiguo "confirmado" (no podemos DELETE por replica identity de Realtime)
+      const dedupedRecords = (() => {
+        const justifiedKeys = new Set();
+        filteredRecords.forEach(r => {
+          if (r.estado === 'justificado') {
+            justifiedKeys.add(`${r['Nombre completo estudiante']}|${r.fecha_atraso}|${r.hora_llegada}`);
+          }
+        });
+        return filteredRecords.filter(r => {
+          if (r.estado === 'confirmado') {
+            const key = `${r['Nombre completo estudiante']}|${r.fecha_atraso}|${r.hora_llegada}`;
+            if (justifiedKeys.has(key)) return false; // hay versión justificada, ocultar esta
+          }
+          return true;
+        });
+      })();
 
+      useEffect(()=> { if (window.lucide) window.lucide.replace(); }, [records, searchTerm, dateFilter, statusFilter, loading]);
       const clearFilters = () => {
         setSearchTerm('');
         setDateFilter('');
@@ -1612,7 +1632,7 @@
               <>
                 <div className="text-sm text-gray-600 mb-4 flex items-center gap-2 animate-slideIn">
                   <i data-lucide="database" style={{width:16,height:16}} className="text-institutional-blue"></i>
-                  Mostrando {filteredRecords.length} de {records.filter(r => r.estado === 'confirmado').length} registros
+                  Mostrando {dedupedRecords.length} de {records.length} registros
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -1627,13 +1647,13 @@
                       {userRole === 'inspeccion' && <th className="text-left p-3 text-sm font-semibold">Acciones</th>}
                     </tr></thead>
                     <tbody>
-                      {filteredRecords.length === 0 ? (
+                      {dedupedRecords.length === 0 ? (
                         <tr><td colSpan={userRole === 'inspeccion' ? '8' : '6'} className="text-center py-8 text-gray-500">
                           <i data-lucide="search-x" style={{width:48,height:48}} className="mx-auto mb-2 text-gray-300 animate-bounce-slow"></i>
                           <p>No se encontraron registros de atrasos</p>
                         </td></tr>
                       ) : (
-                        filteredRecords.map((record, index) => (
+                        dedupedRecords.map((record, index) => (
                           <tr key={record.N || index} className="border-b-2 border-gray-100 hover:bg-yellow-50 transition-all">
                             <td className="p-3 text-sm">{new Date(record.fecha_atraso + 'T00:00:00').toLocaleDateString('es-ES')}</td>
                             <td className="p-3 text-sm font-medium">{record['Nombre completo estudiante']}</td>
@@ -1763,7 +1783,6 @@
         try {
           let filePayload = null;
 
-          // Convertir archivo a base64 si existe
           if (file) {
             const base64 = await new Promise((resolve, reject) => {
               const reader = new FileReader();
@@ -1779,24 +1798,25 @@
             };
           }
 
-          // Construir filtro único usando nombre + fecha + hora (no depende de N)
-          const nombre = encodeURIComponent(justificationRecord['Nombre completo estudiante']);
-          const fecha = justificationRecord.fecha_atraso;
-          const hora = justificationRecord.hora_llegada;
-          const filtro = `Nombre%20completo%20estudiante=eq.${nombre}&fecha_atraso=eq.${fecha}&hora_llegada=eq.${hora}`;
-
-          // Datos a actualizar: usar columnas justificacion y archivo_adjunto que existen en la tabla
-          const updateData = {
-            motivo_atraso: justification,
-            estado: 'justificado'
+          // Solo INSERT una nueva fila con estado justificado
+          // No hacemos PATCH ni DELETE (fallarian por replica identity)
+          // La lógica de dedup en filteredRecords esconde la fila antigua "confirmado"
+          const nuevaFila = {
+            'Nombre completo estudiante': justificationRecord['Nombre completo estudiante'],
+            Curso: justificationRecord.Curso,
+            'Email estudiante': justificationRecord['Email estudiante'] || null,
+            fecha_atraso: justificationRecord.fecha_atraso,
+            hora_llegada: justificationRecord.hora_llegada,
+            registrado_por: justificationRecord.registrado_por || null,
+            estado: 'justificado',
+            motivo_atraso: justification
           };
 
-          // Si hay archivo, agregarlo al campo archivo_adjunto (jsonb)
           if (filePayload) {
-            updateData.archivo_adjunto = filePayload;
+            nuevaFila.archivo_adjunto = filePayload;
           }
 
-          await supabaseRequest(`atrasos?${filtro}`, 'PATCH', updateData);
+          await supabaseRequest('atrasos', 'POST', nuevaFila);
 
           showNotification('success', 'Justificación guardada correctamente');
           setJustificationRecord(null);
