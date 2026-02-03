@@ -1635,7 +1635,7 @@
       const loadAttendanceRecords = async () => {
         setLoading(true);
         try {
-          const allRecords = await supabaseRequest('atrasos?select=N,Curso,Nombre%20completo%20estudiante,Correo%20electrónico%20estudiante,fecha_atraso,hora_llegada,motivo_atraso,registrado_por,estado,created_at,Justificación&fecha_atraso=not.is.null&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
+          const allRecords = await supabaseRequest('atrasos?select=*&fecha_atraso=not.is.null&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
           setRecords(allRecords || []);
         } catch (err) {
           console.error('Error al cargar registros:', err);
