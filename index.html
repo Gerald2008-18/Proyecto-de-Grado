@@ -1408,6 +1408,18 @@
       const handleJustification = (record) => {
         setJustificationRecord(record);
       };
+      // Construye el filtro de PATCH usando el mejor identificador disponible del registro
+      const buildPatchFilter = (record) => {
+        // 1) id (PK por defecto de Supabase, bigint serial)
+        if (record.id != null) return `id=eq.${record.id}`;
+        // 2) N (columna custom si existe)
+        if (record.N != null) return `N=eq.${record.N}`;
+        // 3) Fallback: nombre + fecha (compuesto, debe ser único por día)
+        const nombre = encodeURIComponent(record['Nombre completo estudiante'] || '');
+        const fecha  = record.fecha_atraso || '';
+        return `${encodeURIComponent('Nombre completo estudiante')}=eq.${nombre}&fecha_atraso=eq.${fecha}`;
+      };
+
       const submitJustification = async (justification, file) => {
         setIsSubmitting(true);
         try {
@@ -1432,7 +1444,11 @@
           const updateData = {
             motivo_atraso: motivoTexto
           };
-          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', updateData);
+
+          const filter = buildPatchFilter(justificationRecord);
+          console.log('[PATCH] filtro usado →', filter);
+          await supabaseRequest(`atrasos?${filter}`, 'PATCH', updateData);
+
           showNotification('success', 'Justificación guardada correctamente');
           setJustificationRecord(null);
           await loadAttendanceRecords();
@@ -1445,52 +1461,12 @@
       };
       
       
-      // ── Parsea la cadena QR:  "ID:1;Nombre:ALVARADO ...;Curso:Inicial 1 A - Inicial;Email:..."
-      const parseQRData = (raw) => {
-        const parsed = {};
-        if (!raw) return parsed;
-        // Dividir por ";" y luego separar clave:valor solo en el PRIMER ":"
-        raw.split(';').forEach(segment => {
-          const colonIndex = segment.indexOf(':');
-          if (colonIndex === -1) return;
-          const key   = segment.substring(0, colonIndex).trim();
-          const value = segment.substring(colonIndex + 1).trim();
-          if (key && value) parsed[key] = value;
-        });
-        return parsed;
-      };
-
-      // ── Busca en una tabla dada usando nombre (ilike) o ID (eq sobre columna N)
-      const searchInTable = async (tableName, nombre, id) => {
-        // Columna "Nombre completo estudiante" tiene espacios → se encodeURIComponent
-        const colNombre = encodeURIComponent('Nombre completo estudiante');
-
-        // 1) Por ID numérico (columna N)
-        if (id) {
-          try {
-            const res = await supabaseRequest(`${tableName}?select=*&N=eq.${id}&limit=1`);
-            if (res && res.length > 0) return res;
-          } catch (e) { console.warn('Búsqueda por ID fallida en', tableName, e); }
-        }
-
-        // 2) Por nombre con ilike  (busca coincidencia parcial)
-        if (nombre) {
-          try {
-            const like = encodeURIComponent(`%${nombre}%`);
-            const res = await supabaseRequest(`${tableName}?select=*&${colNombre}=ilike.${like}&limit=5`);
-            if (res && res.length > 0) return res;
-          } catch (e) { console.warn('Búsqueda por nombre fallida en', tableName, e); }
-        }
-
-        return [];
-      };
-
       const findStudent = async (originalSearchTerm) => {
         try {
           setIsSubmitting(true);
-          const raw = originalSearchTerm?.toString().trim();
-
-          if (!raw) {
+          const searchTerm = originalSearchTerm?.toString().trim();
+          
+          if (!searchTerm) {
             showNotification('error', 'Ingrese el nombre o ID del estudiante');
             setIsSubmitting(false);
             setShowScanner(false);
@@ -1498,103 +1474,75 @@
             return;
           }
 
-          // ── 1. Parsear cadena QR si tiene el formato clave:valor separado por ";"
-          let nombre = null;
-          let curso  = null;
-          let email  = null;
-          let idQR   = null;
-
-          const qrParsed = parseQRData(raw);
-          if (qrParsed['Nombre'] || qrParsed['ID']) {
-            // Vino del escáner QR → usar los campos extraídos
-            nombre = qrParsed['Nombre'] || null;
-            curso  = qrParsed['Curso']  || null;
-            email  = qrParsed['Email']  || null;
-            idQR   = qrParsed['ID']     || null;
-            console.log('[QR Parseado]', { id: idQR, nombre, curso, email });
-          } else {
-            // Vino de ingreso manual → el texto completo es el término de búsqueda
-            nombre = raw;
-            // Si es solo un número, tratarlo como ID
-            if (/^\d+$/.test(raw)) {
-              idQR   = raw;
-              nombre = null;
-            }
-          }
-
-          // ── 2. Buscar estudiante: primero en tabla "estudiantes" (si existe), luego en "atrasos"
           let results = [];
-
-          // Intentar tabla dedicada de estudiantes
-          try {
-            results = await searchInTable('estudiantes', nombre, idQR);
-          } catch (e) {
-            console.warn('Tabla "estudiantes" no disponible, buscando en "atrasos":', e.message);
+          
+          // 1. Intentar buscar por ID exacto (Columna N) si es numérico
+          const numericId = parseInt(searchTerm.replace(/\D/g, ''));
+          if (!isNaN(numericId)) {
+            results = await supabaseRequest(
+              `atrasos?select=*&N=eq.${numericId}&fecha_atraso=is.null&limit=1`
+            );
           }
 
-          // Si no se encontró en "estudiantes", buscar en "atrasos" (registros previos)
+          // 2. Si no hay resultados por ID, buscar por nombre (ilike)
           if (!results || results.length === 0) {
-            results = await searchInTable('atrasos', nombre, idQR);
+            const likePattern = encodeURIComponent(`%${searchTerm}%`);
+            results = await supabaseRequest(
+              `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
+            );
           }
 
-          // ── 3. Si el QR nos dio curso/email pero no se encontró en DB, construir objeto directo
-          if ((!results || results.length === 0) && nombre && curso) {
-            console.log('[Estudiante no en DB] Usando datos del QR directamente.');
-            results = [{
-              'Nombre completo estudiante': nombre,
-              'Curso': curso,
-              'Email estudiante': email || null
-            }];
-          }
-
-          // ── 4. Si sigue sin resultados, mostrar error descriptivo
+          // 3. Si sigue sin haber resultados, buscar por curso
           if (!results || results.length === 0) {
-            const buscarPor = nombre || idQR || raw;
-            showNotification('error', `No se encontró al estudiante: ${buscarPor}`);
+            const likePattern = encodeURIComponent(`%${searchTerm}%`);
+            results = await supabaseRequest(
+              `atrasos?select=*&Curso=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
+            );
+          }
+
+          // 4. Fallback final: buscar en cualquier registro (aunque no sea catálogo)
+          if (!results || results.length === 0) {
+            const likePattern = encodeURIComponent(`%${searchTerm}%`);
+            results = await supabaseRequest(
+              `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&limit=1`
+            );
+          }
+
+          if (!results || results.length === 0) {
+            showNotification('error', `No se encontró al estudiante: ${searchTerm}`);
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
             return;
           }
 
-          // ── 5. Tomar el primer resultado y normalizar campos
-          const found = results[0];
-          const studentName  = found['Nombre completo estudiante'] || found['nombre_completo'] || nombre;
-          const studentCurso = found['Curso'] || found['curso'] || curso;
-          const studentEmail = found['Email estudiante'] || found['Email'] || found['email'] || email;
+          const student = results[0];
 
-          // ── 6. Verificar duplicado hoy (mismo estudiante, mismo día, estado confirmado)
+          // Verificar duplicado hoy
           const ecuadorDateTime = getEcuadorDateTime();
           const today = ecuadorDateTime.dateString;
-          const colNombreEnc = encodeURIComponent('Nombre completo estudiante');
-          const nameEnc = encodeURIComponent(studentName);
-
-          let existingRecords = [];
-          try {
-            existingRecords = await supabaseRequest(
-              `atrasos?select=*&${colNombreEnc}=eq.${nameEnc}&fecha_atraso=eq.${today}&estado=eq.confirmado`
-            );
-          } catch (e) { console.warn('Error al verificar duplicado:', e); }
+          const studentNameEncoded = encodeURIComponent(student['Nombre completo estudiante']);
+          const existingRecords = await supabaseRequest(
+            `atrasos?select=*&Nombre completo estudiante=eq.${studentNameEncoded}&fecha_atraso=eq.${today}&estado=eq.confirmado`
+          );
 
           if (existingRecords && existingRecords.length > 0) {
-            showNotification('error', `${studentName} ya tiene atraso confirmado hoy`);
+            showNotification('error', 'Este estudiante ya tiene un registro de atraso confirmado hoy');
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
             return;
           }
 
-          // ── 7. Todo OK → mostrar modal de confirmación
           const studentToConfirm = {
-            'Nombre completo estudiante': studentName,
-            'Curso': studentCurso,
-            'Email estudiante': studentEmail
+            'Nombre completo estudiante': student['Nombre completo estudiante'],
+            'Curso': student.Curso,
+            'Email estudiante': student['Email estudiante'] || student['Email'] || null
           };
           setSelectedStudent(studentToConfirm);
           setShowScanner(false);
           setShowManualInput(false);
           setIsSubmitting(false);
-
         } catch (err) {
           console.error('Error al buscar estudiante:', err);
           showNotification('error', 'Error en la búsqueda: ' + err.message);
