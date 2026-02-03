@@ -1408,21 +1408,16 @@
       const handleJustification = (record) => {
         setJustificationRecord(record);
       };
-      // Construye el filtro de PATCH usando el mejor identificador disponible del registro
-      const buildPatchFilter = (record) => {
-        // 1) id (PK por defecto de Supabase, bigint serial)
-        if (record.id != null) return `id=eq.${record.id}`;
-        // 2) N (columna custom si existe)
-        if (record.N != null) return `N=eq.${record.N}`;
-        // 3) Fallback: nombre + fecha (compuesto, debe ser único por día)
-        const nombre = encodeURIComponent(record['Nombre completo estudiante'] || '');
-        const fecha  = record.fecha_atraso || '';
-        return `${encodeURIComponent('Nombre completo estudiante')}=eq.${nombre}&fecha_atraso=eq.${fecha}`;
-      };
-
       const submitJustification = async (justification, file) => {
         setIsSubmitting(true);
         try {
+          // Seguridad: si por alguna razón N es null, no enviar PATCH roto
+          if (justificationRecord.N == null) {
+            showNotification('error', 'No se pudo identificar el registro (N es nulo). Recarga la página.');
+            setIsSubmitting(false);
+            return;
+          }
+
           let fileData = null;
           if (file) {
             const base64 = await new Promise((resolve, reject) => {
@@ -1441,13 +1436,8 @@
           const motivoTexto = fileData
             ? `${justification} [ARCHIVO_ADJUNTO:${JSON.stringify(fileData)}]`
             : justification;
-          const updateData = {
-            motivo_atraso: motivoTexto
-          };
 
-          const filter = buildPatchFilter(justificationRecord);
-          console.log('[PATCH] filtro usado →', filter);
-          await supabaseRequest(`atrasos?${filter}`, 'PATCH', updateData);
+          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', { motivo_atraso: motivoTexto });
 
           showNotification('success', 'Justificación guardada correctamente');
           setJustificationRecord(null);
@@ -1461,12 +1451,25 @@
       };
       
       
+      // Parsea "ID:1;Nombre:ALVARADO ...;Curso:Inicial 1 A - Inicial;Email:..."
+      const parseQRData = (raw) => {
+        const parsed = {};
+        raw.split(';').forEach(seg => {
+          const i = seg.indexOf(':');
+          if (i === -1) return;
+          const k = seg.substring(0, i).trim();
+          const v = seg.substring(i + 1).trim();
+          if (k && v) parsed[k] = v;
+        });
+        return parsed;
+      };
+
       const findStudent = async (originalSearchTerm) => {
         try {
           setIsSubmitting(true);
-          const searchTerm = originalSearchTerm?.toString().trim();
-          
-          if (!searchTerm) {
+          const raw = originalSearchTerm?.toString().trim();
+
+          if (!raw) {
             showNotification('error', 'Ingrese el nombre o ID del estudiante');
             setIsSubmitting(false);
             setShowScanner(false);
@@ -1474,42 +1477,50 @@
             return;
           }
 
+          // ── Extraer nombre e ID del QR o del ingreso manual
+          let nombre = null;
+          let idBuscado = null;                   // valor de N del QR
+
+          const qr = parseQRData(raw);
+          if (qr['Nombre'] || qr['ID']) {
+            nombre   = qr['Nombre'] || null;
+            idBuscado = qr['ID']    || null;
+          } else {
+            // Ingreso manual: si es solo número → ID, sino → nombre
+            nombre = /^\d+$/.test(raw) ? null : raw;
+            idBuscado = /^\d+$/.test(raw) ? raw : null;
+          }
+
+          const colNombre = encodeURIComponent('Nombre completo estudiante');
           let results = [];
-          
-          // 1. Intentar buscar por ID exacto (Columna N) si es numérico
-          const numericId = parseInt(searchTerm.replace(/\D/g, ''));
-          if (!isNaN(numericId)) {
+
+          // ── 1) Buscar por N exacto (filas catálogo donde fecha_atraso IS NULL)
+          if (idBuscado) {
             results = await supabaseRequest(
-              `atrasos?select=*&N=eq.${numericId}&fecha_atraso=is.null&limit=1`
+              `atrasos?select=*&N=eq.${idBuscado}&fecha_atraso=is.null&limit=1`
             );
           }
 
-          // 2. Si no hay resultados por ID, buscar por nombre (ilike)
-          if (!results || results.length === 0) {
-            const likePattern = encodeURIComponent(`%${searchTerm}%`);
+          // ── 2) Buscar por nombre en filas catálogo (fecha_atraso IS NULL)
+          if ((!results || results.length === 0) && nombre) {
+            const like = encodeURIComponent(`%${nombre}%`);
             results = await supabaseRequest(
-              `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
+              `atrasos?select=*&${colNombre}=ilike.${like}&fecha_atraso=is.null&limit=5`
             );
           }
 
-          // 3. Si sigue sin haber resultados, buscar por curso
+          // ── 3) Si no hay fila libre, quizá ya tiene atraso hoy → buscar en todas
           if (!results || results.length === 0) {
-            const likePattern = encodeURIComponent(`%${searchTerm}%`);
-            results = await supabaseRequest(
-              `atrasos?select=*&Curso=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
-            );
-          }
-
-          // 4. Fallback final: buscar en cualquier registro (aunque no sea catálogo)
-          if (!results || results.length === 0) {
-            const likePattern = encodeURIComponent(`%${searchTerm}%`);
-            results = await supabaseRequest(
-              `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&limit=1`
-            );
+            if (idBuscado) {
+              results = await supabaseRequest(`atrasos?select=*&N=eq.${idBuscado}&limit=1`);
+            } else if (nombre) {
+              const like = encodeURIComponent(`%${nombre}%`);
+              results = await supabaseRequest(`atrasos?select=*&${colNombre}=ilike.${like}&limit=1`);
+            }
           }
 
           if (!results || results.length === 0) {
-            showNotification('error', `No se encontró al estudiante: ${searchTerm}`);
+            showNotification('error', `No se encontró al estudiante: ${nombre || idBuscado || raw}`);
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
@@ -1518,31 +1529,31 @@
 
           const student = results[0];
 
-          // Verificar duplicado hoy
-          const ecuadorDateTime = getEcuadorDateTime();
-          const today = ecuadorDateTime.dateString;
-          const studentNameEncoded = encodeURIComponent(student['Nombre completo estudiante']);
-          const existingRecords = await supabaseRequest(
-            `atrasos?select=*&Nombre completo estudiante=eq.${studentNameEncoded}&fecha_atraso=eq.${today}&estado=eq.confirmado`
+          // ── Verificar si ya tiene atraso confirmado hoy
+          const today = getEcuadorDateTime().dateString;
+          const nameEnc = encodeURIComponent(student['Nombre completo estudiante']);
+          const dup = await supabaseRequest(
+            `atrasos?select=*&${colNombre}=eq.${nameEnc}&fecha_atraso=eq.${today}&estado=eq.confirmado`
           );
-
-          if (existingRecords && existingRecords.length > 0) {
-            showNotification('error', 'Este estudiante ya tiene un registro de atraso confirmado hoy');
+          if (dup && dup.length > 0) {
+            showNotification('error', `${student['Nombre completo estudiante']} ya tiene atraso confirmado hoy`);
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
             return;
           }
 
-          const studentToConfirm = {
+          // ── Guardar N para el PATCH posterior
+          setSelectedStudent({
+            N: student.N,                                                    // ← imprescindible
             'Nombre completo estudiante': student['Nombre completo estudiante'],
-            'Curso': student.Curso,
-            'Email estudiante': student['Email estudiante'] || student['Email'] || null
-          };
-          setSelectedStudent(studentToConfirm);
+            Curso: student.Curso,
+            'Email estudiante': student['Email estudiante'] || null
+          });
           setShowScanner(false);
           setShowManualInput(false);
           setIsSubmitting(false);
+
         } catch (err) {
           console.error('Error al buscar estudiante:', err);
           showNotification('error', 'Error en la búsqueda: ' + err.message);
@@ -1556,16 +1567,18 @@
         setIsSubmitting(true);
         try {
           const ecuadorDateTime = getEcuadorDateTime();
-          const newRecord = {
-            'Nombre completo estudiante': selectedStudent['Nombre completo estudiante'],
-            Curso: selectedStudent.Curso,
-            'Email estudiante': selectedStudent['Email estudiante'] || null,
-            fecha_atraso: ecuadorDateTime.dateString,
-            hora_llegada: ecuadorDateTime.timeString,
+
+          // Solo los campos que se van a LLENAR en la fila existente
+          const updateFields = {
+            fecha_atraso:   ecuadorDateTime.dateString,
+            hora_llegada:   ecuadorDateTime.timeString,
             registrado_por: recordedBy,
-            estado: 'confirmado'
+            estado:         'confirmado'
           };
-          await supabaseRequest(`atrasos`, 'POST', newRecord);
+
+          // PATCH sobre la fila que ya existe, identificada por N
+          await supabaseRequest(`atrasos?N=eq.${selectedStudent.N}`, 'PATCH', updateFields);
+
           showNotification('success', `Atraso confirmado para ${selectedStudent['Nombre completo estudiante']}`);
           setSelectedStudent(null);
           await loadAttendanceRecords();
