@@ -1,23 +1,33 @@
+
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Sistema de Atrasos - UEPDC</title>
+  
+  <!-- Favicon del colegio -->
   <link rel="icon" type="image/png" href="https://i.ibb.co/wNhQpyX0/image-30.png" />
-  <script src="https://cdn.tailwindcss.com">
-</script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/lucide.min.js">
-</script>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide (icons) -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/lucide.min.js"></script>
   <script>
+    // Forzar carga de iconos
     window.addEventListener('load', () => {
       if (window.lucide) window.lucide.replace();
     });
-</script>
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js">
-</script>
+  </script>
+
+  <!-- jsQR (QR scanning) -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
   <style>
     html,body,#root { height: 100%; margin: 0; }
+    
+    /* Colores institucionales */
     :root {
       --primary-blue: #1976D2;
       --primary-blue-dark: #0D47A1;
@@ -26,6 +36,73 @@
       --primary-yellow-dark: #FFA000;
       --primary-yellow-light: #FFD54F;
     }
+
+    /* ANIMACIONES */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .animate-slideIn {
+      animation: slideIn 0.5s ease-out;
+    }
+
+    .animate-pulse-slow {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .animate-bounce-slow {
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    .animate-shimmer {
+      animation: shimmer 2s linear infinite;
+      background: linear-gradient(to right, #10b981 0%, #34d399 50%, #10b981 100%);
+      background-size: 1000px 100%;
+    }
+
+    /* Hover effects */
+    .hover-scale {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-scale:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .hover-glow {
+      transition: box-shadow 0.3s ease;
+    }
+
+    .hover-glow:hover {
+      box-shadow: 0 0 20px rgba(255, 193, 7, 0.6);
+    }
+
     .bg-institutional-blue { background-color: var(--primary-blue); }
     .bg-institutional-blue-dark { background-color: var(--primary-blue-dark); }
     .bg-institutional-yellow { background-color: var(--primary-yellow); }
@@ -33,17 +110,79 @@
     .text-institutional-yellow { color: var(--primary-yellow); }
     .border-institutional-blue { border-color: var(--primary-blue); }
     .border-institutional-yellow { border-color: var(--primary-yellow); }
-    .file-upload-zone { border: 2px dashed #1976D2; }
-    .file-upload-zone.drag-over { border-color: #FFC107; background-color: #FFF9C4; }
-    .logo-container { width: 60px; height: 60px; }
-    .spinner { animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .file-upload-zone {
+      border: 2px dashed #1976D2;
+      transition: all 0.3s ease;
+    }
+    
+    .file-upload-zone:hover {
+      border-color: #FFC107;
+      background-color: #FFFEF7;
+      transform: scale(1.02);
+    }
+
+    .file-upload-zone.drag-over {
+      border-color: #FFC107;
+      background-color: #FFF9C4;
+      transform: scale(1.05);
+    }
+
+    /* Logo responsive */
+    .logo-container {
+      width: 60px;
+      height: 60px;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-container:hover {
+      transform: rotate(5deg) scale(1.1);
+    }
+
+    /* Efectos de tabla */
+    tbody tr {
+      transition: all 0.3s ease;
+    }
+
+    tbody tr:hover {
+      transform: translateX(5px);
+    }
+
+    /* Loading spinner */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    /* Estilo mejorado para "Ya Justificado" */
     .justified-badge {
       background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+      box-shadow: 0 8px 16px rgba(16, 185, 129, 0.4), 0 0 40px rgba(16, 185, 129, 0.2);
       position: relative;
       overflow: hidden;
     }
-    .justified-badge-icon { background: rgba(255, 255, 255, 0.95); }
+
+    .justified-badge::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: rotate(45deg);
+      animation: shimmer 3s linear infinite;
+    }
+
+    .justified-badge-icon {
+      background: rgba(255, 255, 255, 0.95);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Estilo para las secciones del formulario */
     .form-section-header {
       display: flex;
       align-items: center;
@@ -54,25 +193,35 @@
       margin-bottom: 1rem;
       padding-bottom: 0.5rem;
     }
-    </style>
+  </style>
 </head>
 <body>
   <div id="root"></div>
-  <script src="https://unpkg.com/react@18/umd/react.development.js">
-</script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js">
-</script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js">
-</script>
+
+  <!-- React + ReactDOM (UMD) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
+
+    // Logo URL desde internet
     const LOGO_URL = "https://i.ibb.co/wNhQpyX0/image-30.png";
+
+    // Supabase
     const SUPABASE_URL = 'https://ebfknrtbfszjmnnhoxwe.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImViZmtucnRiZnN6am1ubmhveHdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1NTg0NTgsImV4cCI6MjA3OTEzNDQ1OH0.eWgaIfmi7eFs7evpWfflm_MtXH8Ma9LA5s997hR1HGY';
+
+    // Usuarios autorizados para inspección
     const AUTHORIZED_USERS = [
       { email: 'ricardobravo@uepdc.edu.ec', password: 'inspeccion2025', nombre: 'Ricardo Bravo', nombreCompleto: 'BRAVO RIVERA RICARDO ISAAC' },
       { email: 'angelamartinez@uepdc.edu.ec', password: 'inspeccion2025', nombre: 'Angela Martinez', nombreCompleto: 'MARTINEZ ZAMBRANO ANGELA VICTORIA' }
     ];
+
+    // Estructura de cursos completa con paralelos disponibles
     const CURSOS_ESTRUCTURA = {
       inicial: {
         nombre: '🎨 INICIAL',
@@ -128,354 +277,801 @@
         }
       }
     };
+
+    // Función para obtener fecha y hora en Ecuador (UTC-5)
     const getEcuadorDateTime = () => {
       const now = new Date();
       const ecuadorOffset = -5 * 60 * 60 * 1000;
       const localOffset = now.getTimezoneOffset() * 60 * 1000;
       const ecuadorTime = new Date(now.getTime() + localOffset + ecuadorOffset);
+      
       return {
         date: ecuadorTime,
-        dateString: ecuadorTime.getFullYear() + '-' +
-          String(ecuadorTime.getMonth() + 1).padStart(2, '0') + '-' +
-          String(ecuadorTime.getDate()).padStart(2, '0'),
-        timeString: String(ecuadorTime.getHours()).padStart(2, '0') + ':' +
-          String(ecuadorTime.getMinutes()).padStart(2, '0') + ':' +
-          String(ecuadorTime.getSeconds()).padStart(2, '0')
+        dateString: ecuadorTime.getFullYear() + '-' + 
+                    String(ecuadorTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(ecuadorTime.getDate()).padStart(2, '0'),
+        timeString: String(ecuadorTime.getHours()).padStart(2, '0') + ':' + 
+                    String(ecuadorTime.getMinutes()).padStart(2, '0'),
+        displayDate: String(ecuadorTime.getDate()).padStart(2, '0') + '/' + 
+                     String(ecuadorTime.getMonth() + 1).padStart(2, '0') + '/' + 
+                     ecuadorTime.getFullYear()
       };
     };
-    const supabaseRequest = async (endpoint, method = 'GET', body = null, preferReturn = false) => {
-      const url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
-      const headers = {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json'
-      };
-      if (preferReturn && (method === 'POST' || method === 'PATCH')) {
-        headers['Prefer'] = 'return=representation';
-      }
-      const options = { method, headers };
-      if (body && (method === 'POST' || method === 'PATCH' || method === 'PUT')) {
-        options.body = JSON.stringify(body);
-      }
-      console.log(`[supabaseRequest] ${method} ${url}`, body || '');
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`[supabaseRequest] Error ${response.status}:`, errorText);
-        throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
-      }
-      const text = await response.text();
-      if (!text) {
-        console.log('[supabaseRequest] Respuesta vacía (204 No Content)');
-        return [];
-      }
-      try {
-        const json = JSON.parse(text);
-        console.log('[supabaseRequest] Respuesta JSON:', json);
-        return json;
-      } catch (err) {
-        console.error('[supabaseRequest] Error al parsear JSON:', err, 'Texto:', text);
-        return [];
-      }
+
+    // Función para normalizar nombres
+    const normalizeName = (name) => {
+      if (!name) return '';
+      return name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
     };
-    function Login({ onLogin }) {
-      const [email, setEmail] = useState('');
-      const [password, setPassword] = useState('');
-      const [error, setError] = useState('');
-      const [loading, setLoading] = useState(false);
-      const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-        try {
-          const authUser = AUTHORIZED_USERS.find(u => u.email === email && u.password === password);
-          if (authUser) {
-            onLogin('inspeccion', email, {
-              nombreCompletoInspector: authUser.nombreCompleto,
-              nombre: authUser.nombre
-            });
-            return;
-          }
-          const studentsData = await supabaseRequest(`atrasos?Correo%20electr%C3%B3nico%20estudiante=eq.${encodeURIComponent(email)}&select=*&limit=1`);
-          if (studentsData && studentsData.length > 0) {
-            const student = studentsData[0];
-            onLogin('estudiante', email, {
-              nombre_completo: student['Nombre completo estudiante'],
-              curso: student.Curso
-            });
-            return;
-          }
-          setError('Credenciales inválidas');
-        } catch (err) {
-          console.error('Error en login:', err);
-          setError('Error al iniciar sesión: ' + err.message);
-        } finally {
-          setLoading(false);
+
+    // Función para verificar si dos nombres coinciden
+    const namesMatch = (name1, name2) => {
+      if (!name1 || !name2) return false;
+      
+      const normalized1 = normalizeName(name1);
+      const normalized2 = normalizeName(name2);
+      
+      if (normalized1 === normalized2) return true;
+      
+      const words1 = normalized1.split(' ').filter(w => w.length > 2);
+      const words2 = normalized2.split(' ').filter(w => w.length > 2);
+      
+      const matchingWords = words1.filter(w1 => words2.some(w2 => w1 === w2 || w1.includes(w2) || w2.includes(w1)));
+      
+      return matchingWords.length >= 2;
+    };
+
+    const supabaseRequest = async (endpoint, method = 'GET', body = null) => {
+      const options = {
+        method,
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
         }
       };
-      useEffect(() => { if (window.lucide) window.lucide.replace(); }, [error]);
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-yellow-400">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-8 text-center">
-              <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4 bg-white rounded-full p-2 shadow-lg" />
-              <h1 className="text-3xl font-bold text-white mb-2">Sistema de Atrasos</h1>
-              <p className="text-blue-100 text-sm">Unidad Educativa Particular Dolores Cacuango</p>
-            </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              {error && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-center gap-2">
-                  <i data-lucide="alert-circle" style={{width:20,height:20}} className="text-red-500"></i>
-                  <span className="text-red-700 text-sm font-semibold">{error}</span>
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Correo Electrónico</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i data-lucide="mail" style={{width:20,height:20}} className="text-gray-400"></i>
-                  </div>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder="correo@uepdc.edu.ec"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i data-lucide="lock" style={{width:20,height:20}} className="text-gray-400"></i>
-                  </div>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <div className="spinner rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Iniciando sesión...
-                  </>
-                ) : (
-                  <>
-                    <i data-lucide="log-in" style={{width:22,height:22}}></i>
-                    Iniciar Sesión
-                  </>
-                )}
-              </button>
-              <div className="text-center pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600">
-                  <strong>Inspector:</strong> Usa tus credenciales institucionales<br/>
-                  <strong>Estudiante:</strong> Usa tu correo institucional (sin contraseña)
-                </p>
-              </div>
-            </form>
-          </div>
-        </div>
-      );
-    }
+      if (body) options.body = JSON.stringify(body);
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, options);
+      if (!res.ok) {
+        let errText = 'Error en la petición';
+        try { const j = await res.json(); errText = j.message || j.error || errText; } catch {}
+        throw new Error(errText);
+      }
+      return res.json();
+    };
+
+    // FileUpload Component (SOLO para justificación)
     function FileUpload({ onFileSelect, selectedFile }) {
       const [isDragging, setIsDragging] = useState(false);
       const fileInputRef = useRef(null);
+
       const handleDragOver = (e) => {
         e.preventDefault();
         setIsDragging(true);
       };
-      const handleDragLeave = (e) => {
-        e.preventDefault();
+
+      const handleDragLeave = () => {
         setIsDragging(false);
       };
+
       const handleDrop = (e) => {
         e.preventDefault();
         setIsDragging(false);
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-          onFileSelect(files[0]);
-        }
+        const file = e.dataTransfer.files[0];
+        if (file) onFileSelect(file);
       };
+
       const handleFileChange = (e) => {
-        if (e.target.files.length > 0) {
-          onFileSelect(e.target.files[0]);
-        }
+        const file = e.target.files?.[0];
+        if (file) onFileSelect(file);
       };
-      const removeFile = () => {
-        onFileSelect(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-      };
-      useEffect(() => {
-        if (window.lucide) window.lucide.replace();
-      }, [selectedFile]);
+
+      useEffect(() => { if (window.lucide) window.lucide.replace(); }, [selectedFile]);
+
       return (
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Adjuntar Evidencia (Opcional)</label>
-          {!selectedFile ? (
-            <div
-              className={`file-upload-zone rounded-lg p-6 text-center cursor-pointer transition-all ${
-                isDragging ? 'drag-over' : 'bg-gray-50 hover:bg-gray-100'
-              }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileChange}
-                className="hidden"
-                accept="image/*,.pdf,.doc,.docx"
-              />
-              <i data-lucide="upload" style={{width:48,height:48}} className="mx-auto mb-3 text-institutional-blue"></i>
-              <p className="text-gray-600 font-semibold mb-1">Arrastra un archivo o haz clic para seleccionar</p>
-              <p className="text-sm text-gray-500">Imágenes, PDF o documentos</p>
-            </div>
-          ) : (
-            <div className="bg-blue-50 border-2 border-institutional-blue rounded-lg p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-institutional-blue rounded-lg p-2">
-                  <i data-lucide="file" style={{width:24,height:24}} className="text-white"></i>
+        <div className="animate-fadeIn">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Adjuntar Evidencia (Opcional)
+          </label>
+          <div
+            className={`file-upload-zone rounded-lg p-6 text-center cursor-pointer ${isDragging ? 'drag-over' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileChange}
+              className="hidden"
+              accept="image/*,.pdf,.doc,.docx"
+            />
+            
+            {selectedFile ? (
+              <div className="flex items-center justify-center gap-3 animate-slideIn">
+                <i data-lucide="file-check" style={{width:24,height:24}} className="text-institutional-blue"></i>
+                <div className="text-left">
+                  <p className="font-semibold text-institutional-blue">{selectedFile.name}</p>
+                  <p className="text-sm text-gray-500">{(selectedFile.size / 1024).toFixed(2)} KB</p>
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-800">{selectedFile.name}</p>
-                  <p className="text-sm text-gray-600">{(selectedFile.size / 1024).toFixed(2)} KB</p>
-                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onFileSelect(null); }}
+                  className="text-red-500 hover:text-red-700 p-1 hover-scale"
+                >
+                  <i data-lucide="x" style={{width:20,height:20}}></i>
+                </button>
               </div>
-              <button
-                onClick={removeFile}
-                className="text-red-500 hover:bg-red-50 rounded-lg p-2 transition-all"
-              >
-                <i data-lucide="x" style={{width:20,height:20}}></i>
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className="animate-bounce-slow">
+                <i data-lucide="upload-cloud" style={{width:40,height:40}} className="mx-auto mb-3 text-institutional-blue"></i>
+                <p className="text-institutional-blue font-semibold mb-1">
+                  Arrastra un archivo aquí
+                </p>
+                <p className="text-sm text-gray-500">
+                  o haz clic para seleccionar
+                </p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Formatos: PDF, DOC, DOCX, Imágenes
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       );
     }
+
+    // Login Component
+    function Login({ onLogin }) {
+      const [userType, setUserType] = useState('estudiante');
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState('');
+      
+      const [nombreCompleto, setNombreCompleto] = useState('');
+      const [cedula, setCedula] = useState('');
+      const [nivelEducativo, setNivelEducativo] = useState('');
+      const [anoGrado, setAnoGrado] = useState('');
+      const [especialidad, setEspecialidad] = useState('');
+      const [paralelo, setParalelo] = useState('');
+      const [showRegister, setShowRegister] = useState(false);
+
+      // Obtener opciones de año/grado según nivel educativo
+      const getAnoGradoOptions = () => {
+        if (!nivelEducativo) return [];
+        const nivel = CURSOS_ESTRUCTURA[nivelEducativo];
+        if (!nivel) return [];
+        return Object.keys(nivel.cursos);
+      };
+
+      // Obtener paralelos disponibles según el año/grado y especialidad
+      const getParalelosDisponibles = () => {
+        if (!nivelEducativo || !anoGrado) return [];
+        
+        const nivel = CURSOS_ESTRUCTURA[nivelEducativo];
+        if (!nivel) return [];
+        
+        const curso = nivel.cursos[anoGrado];
+        if (!curso) return [];
+        
+        // Si es bachillerato y tiene especialidades
+        if (curso.especialidades) {
+          if (!especialidad) return [];
+          const esp = curso.especialidades[especialidad];
+          return esp ? esp.paralelos : [];
+        }
+        
+        // Para otros niveles sin especialidades
+        return curso.paralelos || [];
+      };
+
+      // Obtener especialidades disponibles (solo para bachillerato)
+      const getEspecialidadesDisponibles = () => {
+        if (nivelEducativo !== 'bachillerato' || !anoGrado) return [];
+        
+        const nivel = CURSOS_ESTRUCTURA.bachillerato;
+        const curso = nivel.cursos[anoGrado];
+        
+        if (!curso || !curso.especialidades) return [];
+        return Object.keys(curso.especialidades);
+      };
+
+      // Construir el curso completo en formato de base de datos
+      const construirCursoCompleto = () => {
+        if (!nivelEducativo || !anoGrado || !paralelo) return '';
+        
+        const nivel = CURSOS_ESTRUCTURA[nivelEducativo];
+        if (!nivel) return '';
+        
+        const curso = nivel.cursos[anoGrado];
+        if (!curso) return '';
+        
+        // Si es bachillerato con especialidades
+        if (curso.especialidades && especialidad) {
+          const esp = curso.especialidades[especialidad];
+          if (!esp) return '';
+          return esp.formatoDB.replace('{paralelo}', paralelo);
+        }
+        
+        // Para otros niveles
+        if (curso.formatoDB) {
+          return curso.formatoDB.replace('{paralelo}', paralelo);
+        }
+        
+        return '';
+      };
+
+      // Resetear campos cuando cambia el nivel educativo o año/grado
+      useEffect(() => {
+        setAnoGrado('');
+        setEspecialidad('');
+        setParalelo('');
+      }, [nivelEducativo]);
+
+      useEffect(() => {
+        setEspecialidad('');
+        setParalelo('');
+      }, [anoGrado]);
+
+      useEffect(() => {
+        setParalelo('');
+      }, [especialidad]);
+
+      const handleLogin = async () => {
+        setError('');
+        setSuccess('');
+        
+        if (!email.trim() || !password.trim()) {
+          setError('Por favor completa todos los campos');
+          return;
+        }
+
+        if (userType === 'inspeccion') {
+          const user = AUTHORIZED_USERS.find(u => u.email === email && u.password === password);
+          if (user) {
+            onLogin('inspeccion', email, { 
+              nombre_completo: user.nombre, 
+              email: user.email,
+              nombreCompletoInspector: user.nombreCompleto 
+            });
+          } else {
+            setError('Credenciales de inspección incorrectas');
+          }
+          return;
+        }
+
+        if (!email.endsWith('@est.uepdc.edu.ec')) {
+          setError('El correo debe terminar en @est.uepdc.edu.ec');
+          return;
+        }
+
+        try {
+          const users = await supabaseRequest(`usuarios_estudiantes?email=eq.${encodeURIComponent(email)}&select=*`);
+          
+          if (!users || users.length === 0) {
+            setError('Usuario no encontrado. Por favor regístrate primero.');
+            return;
+          }
+
+          const user = users[0];
+          if (user.password !== password) {
+            setError('Contraseña incorrecta');
+            return;
+          }
+
+          onLogin('estudiante', email, user);
+        } catch (err) {
+          setError('Error al iniciar sesión: ' + err.message);
+        }
+      };
+
+      const handleRegister = async () => {
+        setError('');
+        setSuccess('');
+        
+        if (!email.trim() || !password.trim() || !nombreCompleto.trim() || !cedula.trim() || !nivelEducativo || !anoGrado || !paralelo) {
+          setError('Por favor completa todos los campos obligatorios');
+          return;
+        }
+
+        // Validar especialidad para bachillerato
+        if (nivelEducativo === 'bachillerato' && !especialidad) {
+          setError('Por favor selecciona una especialidad para Bachillerato');
+          return;
+        }
+        
+        if (!email.endsWith('@est.uepdc.edu.ec')) {
+          setError('El correo debe terminar en @est.uepdc.edu.ec');
+          return;
+        }
+
+        try {
+          const existing = await supabaseRequest(`usuarios_estudiantes?email=eq.${encodeURIComponent(email)}&select=*`);
+          if (existing && existing.length > 0) {
+            setError('Este correo ya está registrado');
+            return;
+          }
+
+          // Construir el curso completo en formato de base de datos
+          const cursoCompleto = construirCursoCompleto();
+          
+          if (!cursoCompleto) {
+            setError('Error al construir el curso. Por favor verifica los datos.');
+            return;
+          }
+
+          const newUser = {
+            email: email,
+            password: password,
+            nombre_completo: nombreCompleto,
+            cedula: cedula,
+            curso: cursoCompleto
+          };
+
+          await supabaseRequest('usuarios_estudiantes', 'POST', newUser);
+          setSuccess('Registro exitoso. Ahora puedes iniciar sesión.');
+          
+          setEmail('');
+          setPassword('');
+          setNombreCompleto('');
+          setCedula('');
+          setNivelEducativo('');
+          setAnoGrado('');
+          setEspecialidad('');
+          setParalelo('');
+          
+          setTimeout(() => {
+            setShowRegister(false);
+            setSuccess('');
+          }, 2000);
+        } catch (err) {
+          setError('Error al registrar: ' + err.message);
+        }
+      };
+
+      useEffect(() => { if (window.lucide) window.lucide.replace(); }, [error, success, userType, showRegister, nivelEducativo, anoGrado, especialidad]);
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow hover-glow animate-slideIn">
+            <div className="bg-gradient-to-r from-institutional-blue to-institutional-blue-dark p-8 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent"></div>
+              <div className="text-center text-white relative z-10">
+                <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4 animate-pulse-slow drop-shadow-2xl" />
+                <h1 className="text-3xl font-bold drop-shadow-2xl animate-fadeIn" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>Sistema de Atrasos</h1>
+                <p className="text-yellow-300 mt-2 font-bold text-lg drop-shadow-lg" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>UEPDC</p>
+              </div>
+            </div>
+
+            <div className="p-8">
+              <div className="flex gap-2 mb-6">
+                <button 
+                  onClick={() => { setUserType('estudiante'); setShowRegister(false); }}
+                  className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 hover-scale ${
+                    userType === 'estudiante' 
+                      ? 'bg-gradient-to-r from-institutional-blue to-institutional-blue-dark text-white shadow-lg border-2 border-institutional-blue' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <span>Estudiante</span>
+                </button>
+                <button 
+                  onClick={() => { setUserType('inspeccion'); setShowRegister(false); }}
+                  className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 hover-scale ${
+                    userType === 'inspeccion' 
+                      ? 'bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 shadow-lg border-2 border-institutional-yellow' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span>Inspección</span>
+                </button>
+              </div>
+
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border-2 border-red-300 rounded-lg text-red-700 text-sm flex items-center gap-2 animate-slideIn">
+                  <i data-lucide="alert-circle" style={{width:18,height:18}}></i>
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="mb-4 p-3 bg-green-50 border-2 border-green-300 rounded-lg text-green-700 text-sm flex items-center gap-2 animate-slideIn">
+                  <i data-lucide="check-circle" style={{width:18,height:18}}></i>
+                  {success}
+                </div>
+              )}
+
+              {userType === 'estudiante' && !showRegister ? (
+                <div className="space-y-4 animate-fadeIn">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Correo Estudiantil</label>
+                    <input 
+                      type="email" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      placeholder="tu@est.uepdc.edu.ec"
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow focus:border-institutional-yellow transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
+                    <input 
+                      type="password" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      placeholder="••••••••"
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow focus:border-institutional-yellow transition-all"
+                    />
+                  </div>
+
+                  <button 
+                    onClick={handleLogin}
+                    className="w-full bg-gradient-to-r from-institutional-blue to-institutional-blue-dark text-white py-3.5 rounded-lg font-bold hover:from-institutional-blue-dark hover:to-institutional-blue transition-all shadow-lg hover-scale flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="log-in" style={{width:20,height:20}}></i>
+                    Iniciar Sesión
+                  </button>
+
+                  <button 
+                    onClick={() => setShowRegister(true)}
+                    className="w-full bg-white border-2 border-institutional-blue text-institutional-blue py-3.5 rounded-lg font-bold hover:bg-blue-50 transition-all hover-scale flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="user-check" style={{width:20,height:20}}></i>
+                    Registrarse
+                  </button>
+                </div>
+              ) : userType === 'estudiante' && showRegister ? (
+                <div className="space-y-4 animate-fadeIn max-h-[60vh] overflow-y-auto pr-2">
+                  {/* Datos Personales */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <i data-lucide="user" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                      Nombre Completo *
+                    </label>
+                    <input 
+                      type="text" 
+                      value={nombreCompleto} 
+                      onChange={(e) => setNombreCompleto(e.target.value)}
+                      placeholder="Ej: Juan Andrés Pérez Gómez"
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <i data-lucide="mail" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                      Correo Institucional *
+                    </label>
+                    <input 
+                      type="email" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                      placeholder="tuemail@est.uepdc.edu.ec"
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <i data-lucide="credit-card" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                      Cédula *
+                    </label>
+                    <input 
+                      type="text" 
+                      value={cedula} 
+                      onChange={(e) => setCedula(e.target.value)}
+                      placeholder="0123456789"
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
+                    />
+                  </div>
+
+                  {/* Información Académica */}
+                  <div className="form-section-header">
+                    <i data-lucide="book-open" style={{width:20,height:20}}></i>
+                    Información Académica
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <i data-lucide="graduation-cap" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                      Nivel Educativo *
+                    </label>
+                    <select 
+                      value={nivelEducativo} 
+                      onChange={(e) => setNivelEducativo(e.target.value)}
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
+                    >
+                      <option value="">Selecciona el nivel</option>
+                      {Object.entries(CURSOS_ESTRUCTURA).map(([key, nivel]) => (
+                        <option key={key} value={key}>{nivel.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {nivelEducativo && getAnoGradoOptions().length > 0 && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="calendar" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                        Año/Grado *
+                      </label>
+                      <select 
+                        value={anoGrado} 
+                        onChange={(e) => setAnoGrado(e.target.value)}
+                        className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
+                      >
+                        <option value="">Selecciona el grado</option>
+                        {getAnoGradoOptions().map(option => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {nivelEducativo === 'bachillerato' && anoGrado && getEspecialidadesDisponibles().length > 0 && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="award" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                        Especialidad *
+                      </label>
+                      <select 
+                        value={especialidad} 
+                        onChange={(e) => setEspecialidad(e.target.value)}
+                        className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
+                      >
+                        <option value="">Selecciona la especialidad</option>
+                        {getEspecialidadesDisponibles().map(esp => (
+                          <option key={esp} value={esp}>
+                            {esp === 'BGU Ciencias' ? '🔬 ' : esp === 'TICS Informática' ? '💻 ' : '💼 '}{esp}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {((nivelEducativo !== 'bachillerato' && anoGrado) || (nivelEducativo === 'bachillerato' && especialidad)) && getParalelosDisponibles().length > 0 && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="users" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                        Paralelo *
+                      </label>
+                      <select 
+                        value={paralelo} 
+                        onChange={(e) => setParalelo(e.target.value)}
+                        className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
+                      >
+                        <option value="">Selecciona el paralelo</option>
+                        {getParalelosDisponibles().map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Seguridad */}
+                  <div className="form-section-header">
+                    <i data-lucide="lock" style={{width:20,height:20}}></i>
+                    Seguridad
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <i data-lucide="key" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                      Contraseña *
+                    </label>
+                    <input 
+                      type="password" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow transition-all"
+                    />
+                  </div>
+
+                  <button 
+                    onClick={handleRegister}
+                    className="w-full bg-gradient-to-r from-institutional-blue to-institutional-blue-dark text-white py-3.5 rounded-lg font-bold hover:from-institutional-blue-dark hover:to-institutional-blue transition-all shadow-lg hover-scale flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="sparkles" style={{width:20,height:20}}></i>
+                    Crear Cuenta
+                  </button>
+
+                  <button 
+                    onClick={() => setShowRegister(false)}
+                    className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3.5 rounded-lg font-bold hover:bg-gray-50 transition-all hover-scale flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="arrow-left" style={{width:20,height:20}}></i>
+                    Volver a Iniciar Sesión
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4 animate-fadeIn">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Correo de Inspección</label>
+                    <input 
+                      type="email" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      placeholder="inspector@uepdc.edu.ec"
+                      className="w-full border-2 border-institutional-yellow rounded-lg p-3 focus:ring-2 focus:ring-institutional-blue transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
+                    <input 
+                      type="password" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                      placeholder="••••••••"
+                      className="w-full border-2 border-institutional-yellow rounded-lg p-3 focus:ring-2 focus:ring-institutional-blue transition-all"
+                    />
+                  </div>
+
+                  <button 
+                    onClick={handleLogin}
+                    className="w-full bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 py-3.5 rounded-lg font-bold hover:from-institutional-yellow-dark hover:to-institutional-yellow transition-all shadow-lg hover-scale flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="shield-check" style={{width:20,height:20}}></i>
+                    Iniciar Sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // QR Scanner component
     function QRScanner({ onScan, onClose }) {
-      const videoRef = useRef(null);
-      const canvasRef = useRef(null);
-      const scanIntervalRef = useRef(null);
       const [isScanning, setIsScanning] = useState(false);
       const [error, setError] = useState('');
       const [capturedImage, setCapturedImage] = useState(null);
       const [showImageViewer, setShowImageViewer] = useState(false);
+      const videoRef = useRef(null);
+      const canvasRef = useRef(null);
+      const streamRef = useRef(null);
+      const scanIntervalRef = useRef(null);
+
       const startCamera = async () => {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' }
-          });
+          setError('');
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }});
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            videoRef.current.onloadedmetadata = () => {
-              setIsScanning(true);
-              setError('');
-              startAutoScan();
-            };
+            streamRef.current = stream;
+            setIsScanning(true);
+            // Iniciar escaneo automático en segundo plano
+            startAutoScan();
           }
         } catch (err) {
-          console.error('Error al acceder a la cámara:', err);
-          setError('No se pudo acceder a la cámara. Verifica los permisos.');
+          setError('No se pudo acceder a la cámara. Por favor, da permisos de cámara.');
         }
       };
+
       const stopCamera = () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(t => t.stop());
+          streamRef.current = null;
+        }
         if (scanIntervalRef.current) {
           clearInterval(scanIntervalRef.current);
           scanIntervalRef.current = null;
         }
-        if (videoRef.current && videoRef.current.srcObject) {
-          const tracks = videoRef.current.srcObject.getTracks();
-          tracks.forEach(track => track.stop());
-          videoRef.current.srcObject = null;
-        }
         setIsScanning(false);
       };
+
       const scanQRCode = () => {
-        if (videoRef.current && canvasRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
-          const video = videoRef.current;
-          const canvas = canvasRef.current;
-          const ctx = canvas.getContext('2d');
+        if (!videoRef.current || !canvasRef.current) return;
+        
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" }) : null;
+          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
+
           if (code) {
             stopCamera();
-            onScan(code.data);
+            const qrData = code.data;
+            const idMatch = qrData.match(/ID:(\d+)/i);
+            const studentId = idMatch ? idMatch[1] : qrData;
+            onScan(studentId);
           }
         }
       };
+
       const startAutoScan = () => {
+        // Escaneo automático cada 300ms
         if (scanIntervalRef.current) {
           clearInterval(scanIntervalRef.current);
         }
         scanIntervalRef.current = setInterval(scanQRCode, 300);
       };
+
       const capturePhoto = () => {
         if (videoRef.current && canvasRef.current) {
+          // Pausar escaneo automático mientras capturamos
           if (scanIntervalRef.current) {
             clearInterval(scanIntervalRef.current);
             scanIntervalRef.current = null;
           }
+          
           const video = videoRef.current;
           const canvas = canvasRef.current;
           const ctx = canvas.getContext('2d');
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          
+          // Convertir a imagen base64
           const imageDataUrl = canvas.toDataURL('image/png');
           setCapturedImage(imageDataUrl);
           setShowImageViewer(true);
           stopCamera();
         }
       };
+
       const processCapturedImage = () => {
         if (canvasRef.current) {
           const canvas = canvasRef.current;
           const ctx = canvas.getContext('2d');
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" }) : null;
+          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
+          
           if (code) {
-            onScan(code.data);
+            const qrData = code.data;
+            const idMatch = qrData.match(/ID:(\d+)/i);
+            const studentId = idMatch ? idMatch[1] : qrData;
+            onScan(studentId);
           } else {
             setError('No se detectó ningún código QR en la imagen. Intenta capturar nuevamente.');
           }
         }
       };
+
       const retakePhoto = () => {
         setCapturedImage(null);
         setShowImageViewer(false);
         setError('');
         startCamera();
       };
+
       useEffect(() => {
         startCamera();
         return () => stopCamera();
       }, []);
+
       useEffect(() => {
         if (window.lucide) window.lucide.replace();
       }, [isScanning, error, showImageViewer]);
+
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 ">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden relative border-4 border-institutional-yellow ">
-            <button
-              onClick={() => { stopCamera(); onClose(); }}
-              className="absolute top-4 right-4 bg-red-500  text-white rounded-full p-2 z-10 flex items-center justify-center"
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden relative border-4 border-institutional-yellow animate-slideIn">
+            <button 
+              onClick={() => { stopCamera(); onClose(); }} 
+              className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 z-10 flex items-center justify-center"
               style={{width: '40px', height: '40px'}}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -486,30 +1082,37 @@
                 <h2 className="text-xl font-bold">Escanear Código QR</h2>
               </div>
             </div>
+
             <div className="p-6">
-              {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm  flex items-center gap-2">
+              {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-slideIn flex items-center gap-2">
                 <i data-lucide="alert-circle" style={{width:18,height:18}}></i>
                 <span>{error}</span>
               </div>}
+
               {!showImageViewer ? (
                 <>
+                  {/* Vista de cámara en vivo - SIN ANIMACIONES */}
                   <div className="bg-black rounded-lg overflow-hidden border-4 border-institutional-yellow relative">
                     <div className="relative aspect-video">
                       <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                     </div>
                   </div>
+
                   <canvas ref={canvasRef} className="hidden"></canvas>
+
+                  {/* Solo botón para capturar foto */}
                   <div className="mt-4">
                     {isScanning && (
-                      <button
+                      <button 
                         onClick={capturePhoto}
-                        className="w-full bg-institutional-yellow text-gray-800 px-6 py-4 rounded-xl font-bold text-lg  transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-blue "
+                        className="w-full bg-institutional-yellow text-gray-800 px-6 py-4 rounded-xl font-bold text-lg hover:bg-institutional-yellow-dark transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-blue hover-scale"
                       >
                         <i data-lucide="camera" style={{width:24,height:24}}></i>
                         Capturar Foto
                       </button>
                     )}
                   </div>
+
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border-2 border-institutional-blue">
                     <p className="text-sm text-institutional-blue text-center flex items-center justify-center gap-2">
                       <i data-lucide="info" style={{width:18,height:18}}></i>
@@ -519,6 +1122,7 @@
                 </>
               ) : (
                 <>
+                  {/* Visor de imagen capturada */}
                   <div className="mb-6">
                     <div className="relative bg-black rounded-xl overflow-hidden border-4 border-institutional-yellow shadow-2xl">
                       <img src={capturedImage} alt="Imagen capturada" className="w-full h-auto" />
@@ -528,22 +1132,25 @@
                       </div>
                     </div>
                   </div>
+
+                  {/* Botones de acción para imagen capturada */}
                   <div className="flex gap-3">
-                    <button
+                    <button 
                       onClick={retakePhoto}
-                      className="flex-1 bg-gray-500 text-white px-6 py-4 rounded-xl font-semibold text-lg  transition-all shadow-lg flex items-center justify-center gap-2 "
+                      className="flex-1 bg-gray-500 text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-gray-600 transition-all shadow-lg flex items-center justify-center gap-2 hover-scale"
                     >
                       <i data-lucide="rotate-ccw" style={{width:22,height:22}}></i>
                       Tomar otra foto
                     </button>
-                    <button
+                    <button 
                       onClick={processCapturedImage}
-                      className="flex-1 bg-institutional-blue text-white px-6 py-4 rounded-xl font-semibold text-lg  transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-yellow "
+                      className="flex-1 bg-institutional-blue text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-institutional-blue-dark transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-yellow hover-scale"
                     >
                       <i data-lucide="scan" style={{width:22,height:22}}></i>
                       Procesar QR
                     </button>
                   </div>
+
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border-2 border-institutional-blue">
                     <p className="text-sm text-institutional-blue text-center flex items-center justify-center gap-2">
                       <i data-lucide="check-circle" style={{width:18,height:18}}></i>
@@ -557,42 +1164,43 @@
         </div>
       );
     }
+
+    // ManualInput component
     function ManualInput({ onSubmit, onClose }) {
       const [code, setCode] = useState('');
+      
       useEffect(() => {
         if (window.lucide) window.lucide.replace();
       }, []);
+
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 ">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow ">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow animate-slideIn">
             <div className="bg-institutional-blue p-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">Ingreso Manual</h2>
-              <button onClick={onClose} className="text-white  rounded-lg p-2 "><i data-lucide="x" style={{width:24,height:24}}></i></button>
+              <button onClick={onClose} className="text-white hover:bg-institutional-blue-dark rounded-lg p-2 hover-scale"><i data-lucide="x" style={{width:24,height:24}}></i></button>
             </div>
             <div className="p-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">Buscar por nombre, curso o ID</label>
               <input type="text" value={code} onChange={(e)=>setCode(e.target.value)} placeholder="Ej: Juan Pérez, 1A, o ID del estudiante"
                 className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow focus:border-institutional-yellow mb-4 transition-all"
-                onKeyPress={(e)=> e.key==='Enter' && code.trim() && onSubmit(code.trim())}
+                onKeyPress={(e)=> e.key==='Enter' && onSubmit(code.trim())}
               />
               <div className="flex gap-3">
-                <button onClick={onClose} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold  ">Cancelar</button>
-                <button 
-                  onClick={() => code.trim() && onSubmit(code.trim())} 
-                  className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold disabled:opacity-50"
-                  disabled={!code.trim()}
-                >
-                  Buscar
-                </button>
+                <button onClick={onClose} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 hover-scale">Cancelar</button>
+                <button onClick={()=>onSubmit(code.trim())} className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold hover:bg-institutional-blue-dark hover-scale">Buscar</button>
               </div>
             </div>
           </div>
         </div>
       );
     }
+
+    // StudentModal component - SIN motivo ni archivo
     function StudentModal({ student, onConfirm, onClose, isSubmitting, userData }) {
       const recordedBy = userData?.nombreCompletoInspector || '';
       const ecuadorDateTime = getEcuadorDateTime();
+
       const handleConfirm = () => {
         if (recordedBy.trim()) {
           onConfirm(recordedBy);
@@ -600,109 +1208,94 @@
           alert('Error: No se pudo identificar al inspector');
         }
       };
+
       useEffect(()=> { if (window.lucide) window.lucide.replace(); }, [student, isSubmitting]);
+
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 ">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border-4 border-institutional-yellow max-h-[90vh] overflow-y-auto ">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border-4 border-institutional-yellow max-h-[90vh] overflow-y-auto animate-slideIn">
             <div className="bg-institutional-yellow p-6 relative">
-              <button onClick={onClose} className="absolute top-4 right-4 text-gray-700  rounded-lg p-2 " disabled={isSubmitting}><i data-lucide="x" style={{width:24,height:24}}></i></button>
+              <button onClick={onClose} className="absolute top-4 right-4 text-gray-700 hover:bg-institutional-yellow-dark rounded-lg p-2 hover-scale" disabled={isSubmitting}><i data-lucide="x" style={{width:24,height:24}}></i></button>
               <div className="flex items-center gap-3 text-gray-800">
-                <div className="bg-white rounded-full p-3 "><i data-lucide="user" style={{width:32,height:32}} className="text-institutional-blue"></i></div>
+                <div className="bg-white rounded-full p-3 animate-pulse-slow"><i data-lucide="user" style={{width:32,height:32}} className="text-institutional-blue"></i></div>
                 <div>
                   <h2 className="text-2xl font-bold">Registro de Atraso</h2>
                   <p className="text-sm opacity-80">Confirmar información del estudiante</p>
                 </div>
               </div>
             </div>
+
             <div className="p-6 space-y-4">
-              <div className="bg-blue-50 border-2 border-institutional-blue rounded-lg p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Estudiante</p>
-                    <p className="font-bold text-gray-900">{student['Nombre completo estudiante']}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Curso</p>
-                    <p className="font-bold text-gray-900">{student.Curso}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Correo</p>
-                    <p className="font-semibold text-gray-700 text-sm">{student['Correo electrónico estudiante']}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">ID</p>
-                    <p className="font-semibold text-gray-700">{student.N || 'N/A'}</p>
-                  </div>
+              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg animate-slideIn">
+                <div className="flex items-center gap-2 mb-2">
+                  <i data-lucide="user" style={{width:18,height:18}} className="text-institutional-blue"></i>
+                  <span className="font-semibold text-gray-700">Nombre Completo</span>
+                </div>
+                <p className="text-lg font-bold text-gray-900">{student['Nombre completo estudiante']}</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg border-2 border-institutional-blue hover-glow transition-all">
+                  <span className="text-sm text-gray-600">Curso</span>
+                  <p className="font-semibold text-gray-900">{student.Curso}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg border-2 border-institutional-blue hover-glow transition-all">
+                  <span className="text-sm text-gray-600">Fecha</span>
+                  <p className="font-semibold text-gray-900">{ecuadorDateTime.displayDate}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg border-2 border-institutional-blue hover-glow transition-all">
+                  <span className="text-sm text-gray-600">Hora</span>
+                  <p className="font-semibold text-gray-900">{ecuadorDateTime.timeString}</p>
                 </div>
               </div>
-              <div className="bg-yellow-50 border-2 border-institutional-yellow rounded-lg p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Fecha</p>
-                    <p className="font-bold text-gray-900">{ecuadorDateTime.dateString}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">Hora</p>
-                    <p className="font-bold text-gray-900">{ecuadorDateTime.timeString}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs text-gray-600 mb-1">Registrado por</p>
-                    <p className="font-bold text-gray-900">{recordedBy}</p>
-                  </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Registrado por</label>
+                <div className="w-full border-2 border-institutional-yellow bg-yellow-50 rounded-lg p-3 flex items-center gap-2">
+                  <i data-lucide="shield-check" style={{width:20,height:20}} className="text-gray-700"></i>
+                  <span className="font-semibold text-gray-800">{recordedBy}</span>
                 </div>
               </div>
             </div>
+
             <div className="bg-gray-50 p-6 flex gap-3">
-              <button
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="flex-1 bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold  "
-              >
-                Cancelar
+              <button onClick={onClose} disabled={isSubmitting} className="flex-1 bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-100 flex items-center justify-center gap-2 hover-scale">
+                <i data-lucide="x" style={{width:20,height:20}}></i> Cerrar
               </button>
-              <button
-                onClick={handleConfirm}
-                disabled={isSubmitting}
-                className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold  disabled:bg-gray-400 flex items-center justify-center gap-2 "
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="spinner rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <i data-lucide="check-circle" style={{width:20,height:20}}></i>
-                    Confirmar Atraso
-                  </>
-                )}
+              <button onClick={handleConfirm} disabled={isSubmitting} className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold hover:bg-institutional-blue-dark flex items-center justify-center gap-2 hover-scale">
+                <i data-lucide="check-circle" style={{width:20,height:20}}></i> {isSubmitting ? 'Guardando...' : 'Confirmar Atraso'}
               </button>
             </div>
           </div>
         </div>
       );
     }
+
+    // FileViewerModal component
     function FileViewerModal({ fileData, onClose }) {
-      useEffect(() => {
-        if (window.lucide) window.lucide.replace();
-      }, []);
+      useEffect(() => { if (window.lucide) window.lucide.replace(); }, []);
+
       const handleDownload = () => {
         if (!fileData || !fileData.data) return;
+        
         const link = document.createElement('a');
         link.href = fileData.data;
-        link.download = fileData.name || 'archivo';
+        link.download = fileData.name;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       };
+
       const isImage = fileData && fileData.type && fileData.type.startsWith('image/');
       const isPDF = fileData && fileData.type && fileData.type === 'application/pdf';
+
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 ">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-4 border-institutional-yellow  relative">
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2  z-20"
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-4 border-institutional-yellow animate-slideIn relative">
+            {/* Botón X para cerrar - Posicionado absolutamente */}
+            <button 
+              onClick={onClose} 
+              className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 z-20"
               style={{width: '40px', height: '40px', boxShadow: '0 2px 8px rgba(0,0,0,0.3)'}}
               title="Cerrar"
             >
@@ -711,12 +1304,14 @@
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
+
             <div className="bg-institutional-blue p-4 flex items-center justify-between">
               <div className="flex items-center gap-2 text-white">
                 <i data-lucide="file-text" style={{width:24,height:24}}></i>
                 <h2 className="text-xl font-bold">Archivo Adjunto</h2>
               </div>
             </div>
+
             <div className="p-6 max-h-[70vh] overflow-y-auto">
               <div className="bg-blue-50 border-2 border-institutional-blue rounded-lg p-4 mb-4">
                 <div className="flex items-center justify-between">
@@ -732,9 +1327,9 @@
                     </div>
                   </div>
                   {fileData.data && (
-                    <button
+                    <button 
                       onClick={handleDownload}
-                      className="bg-institutional-yellow text-gray-800 px-4 py-2 rounded-lg font-semibold  flex items-center gap-2 "
+                      className="bg-institutional-yellow text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-institutional-yellow-dark flex items-center gap-2 hover-scale"
                     >
                       <i data-lucide="download" style={{width:18,height:18}}></i>
                       Descargar
@@ -742,13 +1337,14 @@
                   )}
                 </div>
               </div>
+
               {fileData.data ? (
                 <div className="border-4 border-institutional-yellow rounded-xl overflow-hidden bg-gray-100">
                   {isImage ? (
                     <img src={fileData.data} alt={fileData.name} className="w-full h-auto" />
                   ) : isPDF ? (
-                    <iframe
-                      src={fileData.data}
+                    <iframe 
+                      src={fileData.data} 
                       className="w-full h-[600px]"
                       title={fileData.name}
                     />
@@ -772,9 +1368,12 @@
         </div>
       );
     }
+
+    // JustificationModal component - CON archivo
     function JustificationModal({ record, onClose, onSubmit, isSubmitting }) {
       const [justification, setJustification] = useState(record.motivo_atraso || '');
       const [selectedFile, setSelectedFile] = useState(null);
+
       const handleSubmit = async () => {
         if (!justification.trim()) {
           alert('Por favor ingresa el motivo de justificación');
@@ -782,20 +1381,23 @@
         }
         onSubmit(justification, selectedFile);
       };
+
       useEffect(() => { if (window.lucide) window.lucide.replace(); }, [selectedFile]);
+
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 ">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[90vh] overflow-y-auto border-4 border-institutional-yellow ">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[90vh] overflow-y-auto border-4 border-institutional-yellow animate-slideIn">
             <div className="bg-institutional-blue p-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Justificar Atraso</h2>
-                <button onClick={onClose} disabled={isSubmitting} className="text-white  rounded-lg p-2 ">
+                <button onClick={onClose} disabled={isSubmitting} className="text-white hover:bg-institutional-blue-dark rounded-lg p-2 hover-scale">
                   <i data-lucide="x" style={{width:24,height:24}}></i>
                 </button>
               </div>
             </div>
+
             <div className="p-6 space-y-4">
-              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg ">
+              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg animate-slideIn">
                 <div className="flex items-center gap-2 mb-2">
                   <i data-lucide="user" style={{width:18,height:18}} className="text-institutional-blue"></i>
                   <span className="font-semibold text-gray-700">Estudiante</span>
@@ -807,10 +1409,11 @@
                   <p><strong>Hora:</strong> {record.hora_llegada}</p>
                 </div>
               </div>
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Motivo de Justificación *</label>
-                <textarea
-                  value={justification}
+                <textarea 
+                  value={justification} 
                   onChange={(e) => setJustification(e.target.value)}
                   placeholder="Ingrese el motivo de la justificación..."
                   className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow resize-none transition-all"
@@ -818,20 +1421,22 @@
                   disabled={isSubmitting}
                 />
               </div>
+
               <FileUpload onFileSelect={setSelectedFile} selectedFile={selectedFile} />
             </div>
+
             <div className="bg-gray-50 p-6 flex gap-3">
-              <button
-                onClick={onClose}
+              <button 
+                onClick={onClose} 
                 disabled={isSubmitting}
-                className="flex-1 bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold  "
+                className="flex-1 bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-100 hover-scale"
               >
                 Cancelar
               </button>
-              <button
+              <button 
                 onClick={handleSubmit}
                 disabled={isSubmitting || !justification.trim()}
-                className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold  disabled:bg-gray-400 flex items-center justify-center gap-2 "
+                className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold hover:bg-institutional-blue-dark disabled:bg-gray-400 flex items-center justify-center gap-2 hover-scale"
               >
                 {isSubmitting ? (
                   <>
@@ -850,25 +1455,34 @@
         </div>
       );
     }
+
+    // AttendanceHistory component
     function AttendanceHistory({ records, loading, onRefresh, userRole, userData, onJustify }) {
       const [searchTerm, setSearchTerm] = useState('');
       const [dateFilter, setDateFilter] = useState('');
       const [statusFilter, setStatusFilter] = useState('all');
       const [viewingFile, setViewingFile] = useState(null);
+
       const normalizeDate = (dateString) => {
         if (!dateString) return '';
         if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
         return dateString.split('T')[0];
       };
+
+      // Función helper para determinar si un registro está justificado
       const isJustified = (record) => {
-        if (record.estado === 'justificado') return true;
+        // Un registro está justificado si tiene "[ARCHIVO_ADJUNTO:" o "[Archivo adjunto:" en el motivo
         return record.motivo_atraso && (
-          record.motivo_atraso.includes('[ARCHIVO_ADJUNTO:') ||
+          record.motivo_atraso.includes('[ARCHIVO_ADJUNTO:') || 
           record.motivo_atraso.includes('[Archivo adjunto:')
         );
       };
+
+      // Función para extraer el archivo adjunto del motivo
       const getAttachedFile = (motivo) => {
         if (!motivo) return null;
+        
+        // Buscar el formato nuevo con datos base64
         const newFormatMatch = motivo.match(/\[ARCHIVO_ADJUNTO:({.*?})\]/);
         if (newFormatMatch) {
           try {
@@ -878,189 +1492,196 @@
             return null;
           }
         }
+        
+        // Buscar el formato antiguo (solo nombre)
         const oldFormatMatch = motivo.match(/\[Archivo adjunto: (.*?)\]/);
         if (oldFormatMatch) {
           return { name: oldFormatMatch[1], data: null };
         }
+        
         return null;
       };
+
+      // Función para obtener el motivo limpio (sin información del archivo)
       const getCleanMotivo = (motivo) => {
         if (!motivo) return 'Sin especificar';
         return motivo.replace(/\[ARCHIVO_ADJUNTO:.*?\]/, '').replace(/\[Archivo adjunto:.*?\]/, '').trim() || 'Sin especificar';
       };
+
       const filteredRecords = records.filter(record => {
-        const matchesSearch = !searchTerm ||
-          (record['Nombre completo estudiante']?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch = !searchTerm || 
+          (record['Nombre completo estudiante']?.toLowerCase().includes(searchTerm.toLowerCase()) || 
            record.Curso?.toLowerCase().includes(searchTerm.toLowerCase()));
-        const normalizedRecordDate = normalizeDate(record.fecha_atraso);
-        const normalizedFilterDate = normalizeDate(dateFilter);
-        const matchesDate = !normalizedFilterDate || normalizedRecordDate === normalizedFilterDate;
-        const recordIsJustified = isJustified(record);
-        const matchesStatus = statusFilter === 'all' ||
-          (statusFilter === 'justified' && recordIsJustified) ||
-          (statusFilter === 'pending' && !recordIsJustified);
-        if (userRole === 'estudiante' && userData) {
-          return record['Nombre completo estudiante'] === userData.nombre_completo &&
-                 matchesSearch && matchesDate && matchesStatus;
+        
+        let matchesDate = true;
+        if (dateFilter) {
+          const recordDateStr = normalizeDate(record.fecha_atraso);
+          matchesDate = recordDateStr === dateFilter;
         }
-        return matchesSearch && matchesDate && matchesStatus;
+        
+        // Actualizar la lógica de filtro por estado
+        let matchesStatus = true;
+        if (statusFilter === 'confirmado') {
+          matchesStatus = record.estado === 'confirmado' && !isJustified(record);
+        } else if (statusFilter === 'justificado') {
+          matchesStatus = isJustified(record);
+        }
+        // Si statusFilter === 'all', matchesStatus permanece true
+        
+        const hasValidStatus = record.estado === 'confirmado';
+        
+        if (userRole === 'estudiante' && userData) {
+          const studentNameInRecord = record['Nombre completo estudiante'];
+          const loggedInStudentName = userData.nombre_completo;
+          const matchesStudent = namesMatch(studentNameInRecord, loggedInStudentName);
+          
+          return matchesSearch && matchesDate && matchesStatus && hasValidStatus && matchesStudent;
+        }
+        
+        return matchesSearch && matchesDate && matchesStatus && hasValidStatus;
       });
-      useEffect(() => {
-        if (window.lucide) window.lucide.replace();
-      }, [records, searchTerm, dateFilter, statusFilter, viewingFile]);
+
+      useEffect(()=> { if (window.lucide) window.lucide.replace(); }, [records, searchTerm, dateFilter, statusFilter, loading]);
+
+      const clearFilters = () => {
+        setSearchTerm('');
+        setDateFilter('');
+        setStatusFilter('all');
+      };
+
       return (
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border-4 border-institutional-yellow ">
-            <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-3">
-                  <i data-lucide="clock" style={{width:32,height:32}} className="text-institutional-blue"></i>
-                  Historial de Atrasos
-                </h2>
-                {userRole === 'estudiante' && userData && (
-                  <p className="text-gray-600 mt-2">Estudiante: <strong>{userData.nombre_completo}</strong> | Curso: <strong>{userData.curso}</strong></p>
-                )}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-4 border-institutional-yellow animate-fadeIn">
+          <div className="bg-institutional-yellow p-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3 text-gray-800">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>
+                <h2 className="text-2xl font-bold">Historial de Atrasos</h2>
               </div>
-              <button
-                onClick={onRefresh}
-                className="bg-institutional-blue text-white px-6 py-3 rounded-lg font-semibold  flex items-center gap-2 shadow-lg "
-              >
-                <i data-lucide="refresh-cw" style={{width:20,height:20}}></i>
+              <button onClick={onRefresh} className="bg-gradient-to-r from-white to-gray-50 text-institutional-blue px-5 py-2.5 rounded-lg font-bold hover:from-gray-50 hover:to-white flex items-center gap-2 border-2 border-institutional-blue hover-scale shadow-md transition-all">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"></path></svg>
                 Actualizar
               </button>
             </div>
-            {userRole === 'inspeccion' && (
-              <div className="mb-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Buscar por nombre o curso</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i data-lucide="search" style={{width:18,height:18}} className="text-gray-400"></i>
-                      </div>
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Buscar..."
-                        className="w-full pl-10 pr-4 py-2 border-2 border-institutional-blue rounded-lg focus:ring-2 focus:ring-institutional-yellow"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Filtrar por fecha</label>
-                    <input
-                      type="date"
-                      value={dateFilter}
-                      onChange={(e) => setDateFilter(e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-institutional-blue rounded-lg focus:ring-2 focus:ring-institutional-yellow"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Estado</label>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-institutional-blue rounded-lg focus:ring-2 focus:ring-institutional-yellow"
-                    >
-                      <option value="all">Todos</option>
-                      <option value="pending">Pendientes</option>
-                      <option value="justified">Justificados</option>
-                    </select>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setSearchTerm('');
-                    setDateFilter('');
-                    setStatusFilter('all');
-                  }}
-                  className="bg-institutional-yellow text-gray-800 px-4 py-2 rounded-lg font-semibold  flex items-center gap-2 "
-                >
-                  <i data-lucide="x" style={{width:18,height:18}}></i>
-                  Limpiar
-                </button>
-              </div>
-            )}
+          </div>
+
+          <div className="p-6 border-b-2 border-institutional-yellow bg-gray-50">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <input 
+                type="text" 
+                value={searchTerm} 
+                onChange={(e)=>setSearchTerm(e.target.value)} 
+                placeholder="Buscar por nombre o curso" 
+                className="border-2 border-institutional-blue rounded-lg p-2 focus:ring-2 focus:ring-institutional-yellow transition-all" 
+              />
+              <input 
+                type="date" 
+                value={dateFilter} 
+                onChange={(e)=>setDateFilter(e.target.value)} 
+                className="border-2 border-institutional-blue rounded-lg p-2 focus:ring-2 focus:ring-institutional-yellow transition-all" 
+              />
+              <select 
+                value={statusFilter} 
+                onChange={(e)=>setStatusFilter(e.target.value)} 
+                className="border-2 border-institutional-blue rounded-lg p-2 focus:ring-2 focus:ring-institutional-yellow transition-all"
+              >
+                <option value="all">Todos los estados</option>
+                <option value="confirmado">Confirmados</option>
+                <option value="justificado">Justificados</option>
+              </select>
+              <button 
+                onClick={clearFilters}
+                className="bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 px-4 py-2 rounded-lg font-bold hover:from-gray-300 hover:to-gray-200 flex items-center justify-center gap-2 hover-scale shadow-sm border-2 border-gray-400"
+              >
+                <i data-lucide="filter-x" style={{width:20,height:20}}></i> Limpiar
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6">
             {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="spinner rounded-full h-12 w-12 border-b-4 border-institutional-blue"></div>
+              <div className="text-center py-8">
+                <div className="spinner rounded-full h-12 w-12 border-b-4 border-institutional-blue mx-auto"></div>
+                <p className="mt-4 text-gray-600">Cargando historial...</p>
               </div>
             ) : (
               <>
-                <p className="text-sm text-gray-600 mb-4">Mostrando {filteredRecords.length} de {records.length} registros</p>
+                <div className="text-sm text-gray-600 mb-4 flex items-center gap-2 animate-slideIn">
+                  <i data-lucide="database" style={{width:16,height:16}} className="text-institutional-blue"></i>
+                  Mostrando {filteredRecords.length} de {records.filter(r => r.estado === 'confirmado').length} registros
+                </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-institutional-blue text-white">
-                        <th className="p-3 text-left font-semibold">Fecha</th>
-                        <th className="p-3 text-left font-semibold">Estudiante</th>
-                        <th className="p-3 text-left font-semibold">Curso</th>
-                        <th className="p-3 text-left font-semibold">Hora</th>
-                        {userRole === 'inspeccion' && <th className="p-3 text-left font-semibold">Registrado por</th>}
-                        <th className="p-3 text-left font-semibold">Estado</th>
-                        {userRole === 'estudiante' && <th className="p-3 text-left font-semibold">Acciones</th>}
-                      </tr>
-                    </thead>
+                  <table className="w-full">
+                    <thead className="bg-institutional-blue text-white"><tr>
+                      <th className="text-left p-3 text-sm font-semibold">Fecha</th>
+                      <th className="text-left p-3 text-sm font-semibold">Estudiante</th>
+                      <th className="text-left p-3 text-sm font-semibold">Curso</th>
+                      <th className="text-left p-3 text-sm font-semibold">Hora</th>
+                      <th className="text-left p-3 text-sm font-semibold">Motivo</th>
+                      {userRole === 'inspeccion' && <th className="text-left p-3 text-sm font-semibold">Registrado por</th>}
+                      <th className="text-left p-3 text-sm font-semibold">Estado</th>
+                      {userRole === 'inspeccion' && <th className="text-left p-3 text-sm font-semibold">Acciones</th>}
+                    </tr></thead>
                     <tbody>
                       {filteredRecords.length === 0 ? (
-                        <tr>
-                          <td colSpan={userRole === 'inspeccion' ? 6 : 6} className="text-center py-8 text-gray-500">
-                            <i data-lucide="inbox" style={{width:64,height:64}} className="mx-auto mb-3 text-gray-300"></i>
-                            <p className="font-semibold">No se encontraron registros</p>
-                          </td>
-                        </tr>
+                        <tr><td colSpan={userRole === 'inspeccion' ? '8' : '6'} className="text-center py-8 text-gray-500">
+                          <i data-lucide="search-x" style={{width:48,height:48}} className="mx-auto mb-2 text-gray-300 animate-bounce-slow"></i>
+                          <p>No se encontraron registros de atrasos</p>
+                        </td></tr>
                       ) : (
                         filteredRecords.map((record, index) => (
-                          <tr key={index} className="border-b border-gray-200 hover:bg-blue-50 transition-colors">
-                            <td className="p-3">
-                              {record.fecha_atraso ? new Date(record.fecha_atraso + 'T00:00:00').toLocaleDateString('es-ES') : 'N/A'}
+                          <tr key={record.N || index} className="border-b-2 border-gray-100 hover:bg-yellow-50 transition-all">
+                            <td className="p-3 text-sm">{new Date(record.fecha_atraso + 'T00:00:00').toLocaleDateString('es-ES')}</td>
+                            <td className="p-3 text-sm font-medium">{record['Nombre completo estudiante']}</td>
+                            <td className="p-3 text-sm">{record.Curso}</td>
+                            <td className="p-3 text-sm">
+                              <span className="flex items-center gap-1">
+                                <i data-lucide="clock" style={{width:14,height:14}} className="text-institutional-blue"></i>
+                                {record.hora_llegada || 'N/A'}
+                              </span>
                             </td>
-                            <td className="p-3 font-semibold">{record['Nombre completo estudiante']}</td>
-                            <td className="p-3">{record.Curso}</td>
-                            <td className="p-3">{record.hora_llegada || 'N/A'}</td>
-                            {userRole === 'inspeccion' && <td className="p-3">{record.registrado_por || 'N/A'}</td>}
+                            <td className="p-3 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <span>{getCleanMotivo(record.motivo_atraso)}</span>
+                                {getAttachedFile(record.motivo_atraso) && (
+                                  <button
+                                    onClick={() => setViewingFile(getAttachedFile(record.motivo_atraso))}
+                                    className="bg-institutional-blue text-white px-2 py-1 rounded text-xs font-semibold hover:bg-institutional-blue-dark flex items-center gap-1 hover-scale"
+                                    title="Ver archivo adjunto"
+                                  >
+                                    <i data-lucide="paperclip" style={{width:12,height:12}}></i>
+                                    Ver archivo
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                            {userRole === 'inspeccion' && <td className="p-3 text-sm text-gray-600">{record.registrado_por || 'N/A'}</td>}
                             <td className="p-3">
                               {isJustified(record) ? (
-                                <div>
-                                  <div className="justified-badge inline-flex items-center gap-2 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg  ">
-                                    <div className="justified-badge-icon rounded-full p-1">
-                                      <i data-lucide="badge-check" style={{width:16,height:16}} className="text-emerald-600"></i>
-                                    </div>
-                                    <span className="tracking-wide" style={{textShadow: '0 1px 2px rgba(0,0,0,0.3)'}}>JUSTIFICADO</span>
-                                  </div>
-                                  <div className="mt-2 text-sm">
-                                    <p className="font-semibold text-gray-700">Motivo:</p>
-                                    <p className="text-gray-600">{getCleanMotivo(record.motivo_atraso)}</p>
-                                    {getAttachedFile(record.motivo_atraso) && (
-                                      <button
-                                        onClick={() => setViewingFile(getAttachedFile(record.motivo_atraso))}
-                                        className="mt-2 bg-institutional-yellow text-gray-800 px-3 py-1 rounded-lg text-xs font-semibold  flex items-center gap-1 "
-                                      >
-                                        <i data-lucide="paperclip" style={{width:12,height:12}}></i>
-                                        Ver archivo
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
+                                <span className="inline-flex items-center gap-1 bg-institutional-blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                  <i data-lucide="file-check" style={{width:14,height:14}}></i> Justificado
+                                </span>
+                              ) : record.estado === 'confirmado' ? (
+                                <span className="inline-flex items-center gap-1 bg-institutional-yellow text-gray-800 px-3 py-1 rounded-full text-xs font-semibold border-2 border-institutional-blue">
+                                  <i data-lucide="alert-circle" style={{width:14,height:14}}></i> Confirmado
+                                </span>
                               ) : (
-                                <span className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-lg text-xs font-semibold">
-                                  Pendiente
+                                <span className="inline-flex items-center gap-1 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                  <i data-lucide="clock" style={{width:14,height:14}}></i> Pendiente
                                 </span>
                               )}
                             </td>
-                            {userRole === 'estudiante' && (
+                            {userRole === 'inspeccion' && (
                               <td className="p-3">
                                 {!isJustified(record) ? (
                                   <button
                                     onClick={() => onJustify(record)}
-                                    className="bg-institutional-blue text-white px-3 py-1 rounded-lg text-xs font-semibold  flex items-center gap-1 "
+                                    className="bg-institutional-blue text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-institutional-blue-dark flex items-center gap-1 hover-scale"
                                   >
                                     <i data-lucide="file-edit" style={{width:12,height:12}}></i>
                                     Justificar
                                   </button>
                                 ) : (
-                                  <div className="justified-badge inline-flex items-center gap-2 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg  ">
+                                  <div className="justified-badge inline-flex items-center gap-2 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg hover-scale animate-fadeIn">
                                     <div className="justified-badge-icon rounded-full p-1">
                                       <i data-lucide="badge-check" style={{width:16,height:16}} className="text-emerald-600"></i>
                                     </div>
@@ -1078,10 +1699,13 @@
               </>
             )}
           </div>
+
           {viewingFile && <FileViewerModal fileData={viewingFile} onClose={() => setViewingFile(null)} />}
         </div>
       );
     }
+
+    // Main App
     function App(){
       const [userRole, setUserRole] = useState(null);
       const [userEmail, setUserEmail] = useState('');
@@ -1095,6 +1719,7 @@
       const [records, setRecords] = useState([]);
       const [loading, setLoading] = useState(false);
       const [justificationRecord, setJustificationRecord] = useState(null);
+
       const handleLogin = (role, email, user) => {
         setUserRole(role);
         setUserEmail(email);
@@ -1103,39 +1728,37 @@
           setView('history');
         }
       };
+
       const handleLogout = () => {
         setUserRole(null);
         setUserEmail('');
         setUserData(null);
         setView('scanner');
       };
+
       useEffect(()=> {
         if (view === 'history') loadAttendanceRecords();
       }, [view]);
+
       useEffect(()=> {
         if (window.lucide) window.lucide.replace();
       }, [view, showScanner, showManualInput, selectedStudent, notification, records, userRole, justificationRecord]);
+
       const showNotification = (type, message) => {
         setNotification({type, message});
         setTimeout(()=> setNotification(null), 4000);
       };
+
       const handleJustification = (record) => {
         setJustificationRecord(record);
       };
-      
+
       const submitJustification = async (justification, file) => {
         setIsSubmitting(true);
         try {
-          // CORRECCIÓN: Asegurar que tenemos el campo N del registro
-          console.log('Registro a justificar:', justificationRecord);
-          
-          if (!justificationRecord.N) {
-            showNotification('error', 'No se pudo identificar el registro. Verifica que el registro tenga un ID válido.');
-            setIsSubmitting(false);
-            return;
-          }
-
           let fileData = null;
+          
+          // Convertir archivo a base64 si existe
           if (file) {
             const base64 = await new Promise((resolve, reject) => {
               const reader = new FileReader();
@@ -1143,6 +1766,7 @@
               reader.onerror = reject;
               reader.readAsDataURL(file);
             });
+            
             fileData = {
               name: file.name,
               size: file.size,
@@ -1150,32 +1774,18 @@
               data: base64
             };
           }
-          const motivoTexto = fileData
+
+          // Guardar motivo y archivo en formato JSON
+          const motivoTexto = fileData 
             ? `${justification} [ARCHIVO_ADJUNTO:${JSON.stringify(fileData)}]`
             : justification;
 
-          console.log('PATCH justificar → N:', justificationRecord.N);
+          const updateData = {
+            motivo_atraso: motivoTexto
+          };
           
-          // CORRECCIÓN: Usar el formato de query correcto para Supabase
-          const patchResult = await supabaseRequest(
-            `atrasos?N=eq.${justificationRecord.N}`, 
-            'PATCH', 
-            {
-              motivo_atraso: motivoTexto,
-              estado: 'justificado',
-              Justificación: motivoTexto // Incluir también el campo Justificación
-            },
-            true // Solicitar que retorne el objeto actualizado
-          );
+          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', updateData);
           
-          console.log('PATCH justificación resultado:', JSON.stringify(patchResult));
-          
-          if (!patchResult || (Array.isArray(patchResult) && patchResult.length === 0)) {
-            showNotification('error', 'No se pudo guardar la justificación. Verifica las políticas RLS de la tabla.');
-            setIsSubmitting(false);
-            return;
-          }
-
           showNotification('success', 'Justificación guardada correctamente');
           setJustificationRecord(null);
           await loadAttendanceRecords();
@@ -1186,166 +1796,85 @@
           setIsSubmitting(false);
         }
       };
-      
-      
-      const parseQRData = (raw) => {
-        const parsed = {};
-        raw.split(';').forEach(seg => {
-          const i = seg.indexOf(':');
-          if (i === -1) return;
-          const k = seg.substring(0, i).trim();
-          const v = seg.substring(i + 1).trim();
-          if (k && v) parsed[k] = v;
-        });
-        return parsed;
-      };
 
-      const findStudent = async (originalSearchTerm) => {
+      const findStudent = async (searchTerm) => {
         try {
           setIsSubmitting(true);
-          const raw = originalSearchTerm?.toString().trim();
-
-          if (!raw) {
-            showNotification('error', 'Ingrese el nombre o ID del estudiante');
-            setIsSubmitting(false);
-            setShowScanner(false);
-            setShowManualInput(false);
-            return;
-          }
-
-          let nombre = null;
-          let id = null;
-          const searchLower = raw.toLowerCase();
-
-          if (searchLower.startsWith('id:') || searchLower.includes(';')) {
-            const parsed = parseQRData(raw);
-            nombre = parsed.Nombre || null;
-            id = parsed.ID || null;
-          } else {
-            if (/^\d+$/.test(raw)) {
-              id = raw;
-            } else {
-              nombre = raw;
-            }
-          }
-
-          if (!nombre && !id) {
-            showNotification('error', 'No se pudo extraer información válida del código o búsqueda');
-            setIsSubmitting(false);
-            setShowScanner(false);
-            setShowManualInput(false);
-            return;
-          }
-
-          // CORRECCIÓN: Asegurar que SELECT incluye el campo N
-          let query = 'atrasos?select=N,Nombre%20completo%20estudiante,Curso,Correo%20electrónico%20estudiante,fecha_atraso,hora_llegada,motivo_atraso,estado,registrado_por,created_at,Justificación&limit=500';
           
-          if (nombre) {
-            query += `&Nombre%20completo%20estudiante=ilike.*${encodeURIComponent(nombre)}*`;
-          } else if (id) {
-            query += `&N=eq.${encodeURIComponent(id)}`;
+          // Validar que se haya ingresado texto
+          if (!searchTerm || searchTerm.trim() === '') {
+            showNotification('error', 'Ingrese el nombre del estudiante');
+            setIsSubmitting(false);
+            setShowScanner(false);
+            setShowManualInput(false);
+            return;
+          }
+          
+          let students = [];
+
+          if (!isNaN(searchTerm)) {
+            const byId = await supabaseRequest(`atrasos?N=eq.${searchTerm}&select=*&limit=1`);
+            if (byId && byId.length > 0) students = [byId[0]];
           }
 
-          const allStudents = await supabaseRequest(query);
+          if (students.length === 0) {
+            const byName = await supabaseRequest(`atrasos?or=(Nombre%20completo%20estudiante.ilike.*${encodeURIComponent(searchTerm)}*,Curso.ilike.*${encodeURIComponent(searchTerm)}*)&select=*&limit=1`);
+            if (byName && byName.length > 0) students = [byName[0]];
+          }
 
-          if (!allStudents || allStudents.length === 0) {
-            showNotification('error', 'No se encontró el estudiante en la base de datos');
+          if (!students || students.length === 0) {
+            showNotification('error','Estudiante no encontrado');
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
             return;
           }
 
-          let matchedStudent = null;
-          if (nombre && !id) {
-            const partial = allStudents.filter(s => 
-              s['Nombre completo estudiante']?.toLowerCase().includes(searchLower)
-            );
-            if (partial.length === 1) {
-              matchedStudent = partial[0];
-            } else if (partial.length > 1) {
-              showNotification('error', `Se encontraron ${partial.length} coincidencias. Sé más específico.`);
-              setIsSubmitting(false);
-              setShowScanner(false);
-              setShowManualInput(false);
-              return;
-            }
-          } else {
-            matchedStudent = allStudents[0];
-          }
-
-          if (!matchedStudent) {
-            showNotification('error', 'No se encontró coincidencia exacta');
-            setIsSubmitting(false);
-            setShowScanner(false);
-            setShowManualInput(false);
-            return;
-          }
-
-          // Verificar duplicado del día
+          const student = students[0];
+          
           const ecuadorDateTime = getEcuadorDateTime();
-          const todayStr = ecuadorDateTime.dateString;
-          const duplicateCheck = await supabaseRequest(
-            `atrasos?Nombre%20completo%20estudiante=eq.${encodeURIComponent(matchedStudent['Nombre completo estudiante'])}&fecha_atraso=eq.${todayStr}&select=*&limit=1`
-          );
+          const today = ecuadorDateTime.dateString;
           
-          if (duplicateCheck && duplicateCheck.length > 0) {
-            showNotification('error', 'Este estudiante ya tiene un registro de atraso el día de hoy');
+          const todayQuery = `Nombre%20completo%20estudiante=eq.${encodeURIComponent(student['Nombre completo estudiante'])}&fecha_atraso=eq.${today}&estado=in.(confirmado,justificado)`;
+          const existingRecords = await supabaseRequest(`atrasos?${todayQuery}`);
+
+          if (existingRecords && existingRecords.length > 0) {
+            showNotification('error','Este estudiante ya tiene un registro de atraso hoy');
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
             return;
           }
 
+          setSelectedStudent(student);
           setShowScanner(false);
           setShowManualInput(false);
-          setSelectedStudent(matchedStudent);
-
+          setIsSubmitting(false);
         } catch (err) {
           console.error('Error al buscar estudiante:', err);
-          showNotification('error', 'Error al buscar estudiante: ' + err.message);
+          showNotification('error','Error al buscar estudiante: ' + err.message);
           setIsSubmitting(false);
           setShowScanner(false);
           setShowManualInput(false);
-        } finally {
-          setIsSubmitting(false);
         }
       };
 
       const handleConfirmAttendance = async (recordedBy) => {
         setIsSubmitting(true);
         try {
-          if (selectedStudent.N == null) {
-            showNotification('error', 'No se pudo identificar el registro (N es nulo). Recarga la página.');
-            setIsSubmitting(false);
-            return;
-          }
-
           const ecuadorDateTime = getEcuadorDateTime();
-          const patchPayload = {
+
+          const newRecord = {
+            'Nombre completo estudiante': selectedStudent['Nombre completo estudiante'],
+            Curso: selectedStudent.Curso,
+            'Email estudiante': selectedStudent['Email estudiante'] || null,
             fecha_atraso: ecuadorDateTime.dateString,
             hora_llegada: ecuadorDateTime.timeString,
             registrado_por: recordedBy,
             estado: 'confirmado'
           };
-
-          console.log('PATCH confirmar atraso → N:', selectedStudent.N);
-          const patchResult = await supabaseRequest(
-            `atrasos?N=eq.${selectedStudent.N}`, 
-            'PATCH', 
-            patchPayload,
-            true
-          );
           
-          console.log('PATCH confirmar resultado:', JSON.stringify(patchResult));
-          
-          if (patchResult && Array.isArray(patchResult) && patchResult.length === 0) {
-            console.error('PATCH retornó array vacío → la fila N=' + selectedStudent.N + ' no existe o RLS la bloquea');
-            showNotification('error', 'No se pudo actualizar el registro. Verifica las políticas de la tabla.');
-            setIsSubmitting(false);
-            return;
-          }
-
+          await supabaseRequest(`atrasos`, 'POST', newRecord);
           showNotification('success', `Atraso confirmado para ${selectedStudent['Nombre completo estudiante']}`);
           setSelectedStudent(null);
           await loadAttendanceRecords();
@@ -1356,12 +1885,11 @@
           setIsSubmitting(false);
         }
       };
-      
+
       const loadAttendanceRecords = async () => {
         setLoading(true);
         try {
-          // CORRECCIÓN: Asegurar que SELECT incluye el campo N
-          const allRecords = await supabaseRequest('atrasos?select=N,Nombre%20completo%20estudiante,Curso,Correo%20electrónico%20estudiante,fecha_atraso,hora_llegada,motivo_atraso,estado,registrado_por,created_at,Justificación&fecha_atraso=not.is.null&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
+          const allRecords = await supabaseRequest('atrasos?order=fecha_atraso.desc,hora_llegada.desc&estado=eq.confirmado&limit=1000');
           setRecords(allRecords || []);
         } catch (err) {
           console.error('Error al cargar registros:', err);
@@ -1371,10 +1899,11 @@
           setLoading(false);
         }
       };
-      
+
       if (!userRole) {
         return <Login onLogin={handleLogin} />;
       }
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50">
           <header className="bg-institutional-blue shadow-lg border-b-4 border-institutional-yellow">
@@ -1391,9 +1920,9 @@
                     </p>
                   </div>
                 </div>
-                <button
+                <button 
                   onClick={handleLogout}
-                  className="bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 px-6 py-2.5 rounded-lg font-bold   flex items-center gap-2 border-2 border-white  shadow-lg transition-all"
+                  className="bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 px-6 py-2.5 rounded-lg font-bold hover:from-institutional-yellow-dark hover:to-institutional-yellow flex items-center gap-2 border-2 border-white hover-scale shadow-lg transition-all"
                 >
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                   <span>Cerrar Sesión</span>
@@ -1401,11 +1930,12 @@
               </div>
             </div>
           </header>
+
           {notification && (
             <div className="fixed top-4 right-4 z-50">
               <div className={`rounded-lg shadow-2xl p-4 flex items-center gap-3 max-w-md border-4 ${
-                notification.type === 'success'
-                  ? 'bg-institutional-blue text-white border-institutional-yellow'
+                notification.type === 'success' 
+                  ? 'bg-institutional-blue text-white border-institutional-yellow' 
                   : 'bg-red-500 text-white border-red-700'
               }`}>
                 <i data-lucide={notification.type === 'success' ? 'check-circle' : 'alert-circle'} style={{width:24,height:24}}></i>
@@ -1413,15 +1943,16 @@
               </div>
             </div>
           )}
+
           {userRole === 'inspeccion' && (
             <nav className="bg-white shadow-md sticky top-0 z-40 border-b-4 border-institutional-yellow">
               <div className="container mx-auto px-4">
                 <div className="flex justify-center gap-3 py-4">
-                  <button onClick={()=>setView('scanner')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all  ${view==='scanner' ? 'bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 shadow-lg border-2 border-institutional-blue' : 'bg-gray-100 text-gray-600  border-2 border-gray-300'}`}>
+                  <button onClick={()=>setView('scanner')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all hover-scale ${view==='scanner' ? 'bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 shadow-lg border-2 border-institutional-blue' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-2 border-gray-300'}`}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
                     Registrar Atraso
                   </button>
-                  <button onClick={()=>setView('history')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all  ${view==='history' ? 'bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 shadow-lg border-2 border-institutional-blue' : 'bg-gray-100 text-gray-600  border-2 border-gray-300'}`}>
+                  <button onClick={()=>setView('history')} className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold transition-all hover-scale ${view==='history' ? 'bg-gradient-to-r from-institutional-yellow to-institutional-yellow-dark text-gray-800 shadow-lg border-2 border-institutional-blue' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-2 border-gray-300'}`}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4  4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>
                     Historial
                   </button>
@@ -1429,25 +1960,29 @@
               </div>
             </nav>
           )}
+
           <main className="container mx-auto px-4 py-8">
             {view === 'scanner' && userRole === 'inspeccion' ? (
-              <div className="max-w-2xl mx-auto ">
-                <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border-4 border-institutional-yellow ">
+              <div className="max-w-2xl mx-auto animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border-4 border-institutional-yellow hover-glow">
                   <div className="text-center mb-8">
-                    <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4 " />
+                    <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4 animate-pulse-slow" />
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">Registrar Atraso Estudiantil</h2>
                     <p className="text-gray-600">Selecciona un método para identificar al estudiante</p>
                   </div>
+
                   <div className="space-y-4">
-                    <button onClick={()=>setShowScanner(true)} className="w-full bg-institutional-blue text-white py-4 px-6 rounded-xl font-semibold  transition-all shadow-lg flex items-center justify-center gap-3 text-lg border-2 border-institutional-yellow ">
+                    <button onClick={()=>setShowScanner(true)} className="w-full bg-institutional-blue text-white py-4 px-6 rounded-xl font-semibold hover:bg-institutional-blue-dark transition-all shadow-lg flex items-center justify-center gap-3 text-lg border-2 border-institutional-yellow hover-scale">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                       Escanear Código QR
                     </button>
-                    <button onClick={()=>setShowManualInput(true)} className="w-full bg-institutional-yellow text-gray-800 py-4 px-6 rounded-xl font-semibold  transition-all shadow-lg flex items-center justify-center gap-3 text-lg border-2 border-institutional-blue ">
+
+                    <button onClick={()=>setShowManualInput(true)} className="w-full bg-institutional-yellow text-gray-800 py-4 px-6 rounded-xl font-semibold hover:bg-institutional-yellow-dark transition-all shadow-lg flex items-center justify-center gap-3 text-lg border-2 border-institutional-blue hover-scale">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="17" x2="22" y2="17"></line></svg>
                       Ingreso Manual
                     </button>
                   </div>
+
                   <div className="mt-8 p-4 bg-blue-50 rounded-lg border-2 border-institutional-blue">
                     <p className="text-sm text-institutional-blue text-center flex items-center justify-center gap-2">
                       <i data-lucide="info" style={{width:18,height:18}}></i>
@@ -1457,25 +1992,37 @@
                 </div>
               </div>
             ) : (
-              <AttendanceHistory
-                records={records}
-                loading={loading}
-                onRefresh={loadAttendanceRecords}
+              <AttendanceHistory 
+                records={records} 
+                loading={loading} 
+                onRefresh={loadAttendanceRecords} 
                 userRole={userRole}
                 userData={userData}
                 onJustify={handleJustification}
               />
             )}
           </main>
+
           {showScanner && <QRScanner onScan={findStudent} onClose={()=>setShowScanner(false)} />}
           {showManualInput && <ManualInput onSubmit={findStudent} onClose={()=>setShowManualInput(false)} />}
           {selectedStudent && <StudentModal student={selectedStudent} onConfirm={handleConfirmAttendance} onClose={()=>setSelectedStudent(null)} isSubmitting={isSubmitting} userData={userData} />}
           {justificationRecord && <JustificationModal record={justificationRecord} onClose={()=>setJustificationRecord(null)} onSubmit={submitJustification} isSubmitting={isSubmitting} />}
+
         </div>
       );
     }
+
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
-</script>
+
+  </script>
+
+  <script>
+    // Renderizar iconos Lucide múltiples veces para asegurar que todos se muestren
+    setTimeout(()=> { if (window.lucide) window.lucide.replace(); }, 100);
+    setTimeout(()=> { if (window.lucide) window.lucide.replace(); }, 500);
+    setTimeout(()=> { if (window.lucide) window.lucide.replace(); }, 1000);
+    setTimeout(()=> { if (window.lucide) window.lucide.replace(); }, 2000);
+  </script>
 </body>
 </html>
