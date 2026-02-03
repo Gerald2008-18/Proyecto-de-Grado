@@ -1455,10 +1455,40 @@
             setShowManualInput(false);
             return;
           }
-          let students = [];
-          const encodedSearch = encodeURIComponent(`*${searchTerm}*`);
-          const query = `or=(Nombre%20completo%20estudiante.ilike.${encodedSearch},Curso.ilike.${encodedSearch})&select=*&limit=1`;
-          const results = await supabaseRequest(`atrasos?${query}`);
+
+          let results = null;
+          // Usar % como comodines para ilike en PostgREST (no *)
+          const likePattern = encodeURIComponent(`%${searchTerm}%`);
+
+          // Buscar por nombre en registros base (fecha_atraso = NULL = catálogo de estudiantes)
+          results = await supabaseRequest(
+            `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
+          );
+
+          // Si no encuentra por nombre, buscar por curso
+          if (!results || results.length === 0) {
+            results = await supabaseRequest(
+              `atrasos?select=*&Curso=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
+            );
+          }
+
+          // Si el searchTerm es numérico, buscar por ID (columna N)
+          if (!results || results.length === 0) {
+            const numericId = parseInt(searchTerm);
+            if (!isNaN(numericId)) {
+              results = await supabaseRequest(
+                `atrasos?select=*&N=eq.${numericId}&fecha_atraso=is.null&limit=1`
+              );
+            }
+          }
+
+          // Fallback: buscar por nombre sin filtrar por fecha (cualquier registro)
+          if (!results || results.length === 0) {
+            results = await supabaseRequest(
+              `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&limit=5`
+            );
+          }
+
           if (!results || results.length === 0) {
             showNotification('error', 'Estudiante no encontrado en la base de datos');
             setIsSubmitting(false);
@@ -1466,11 +1496,17 @@
             setShowManualInput(false);
             return;
           }
+
           const student = results[0];
+
+          // Verificar duplicado hoy
           const ecuadorDateTime = getEcuadorDateTime();
           const today = ecuadorDateTime.dateString;
-          const todayQuery = `Nombre%20completo%20estudiante=eq.${encodeURIComponent(student['Nombre completo estudiante'])}&fecha_atraso=eq.${today}&estado=eq.confirmado`;
-          const existingRecords = await supabaseRequest(`atrasos?${todayQuery}`);
+          const studentNameEncoded = encodeURIComponent(student['Nombre completo estudiante']);
+          const existingRecords = await supabaseRequest(
+            `atrasos?select=*&Nombre completo estudiante=eq.${studentNameEncoded}&fecha_atraso=eq.${today}&estado=eq.confirmado`
+          );
+
           if (existingRecords && existingRecords.length > 0) {
             showNotification('error', 'Este estudiante ya tiene un registro de atraso confirmado hoy');
             setIsSubmitting(false);
@@ -1478,6 +1514,7 @@
             setShowManualInput(false);
             return;
           }
+
           const studentToConfirm = {
             'Nombre completo estudiante': student['Nombre completo estudiante'],
             'Curso': student.Curso,
