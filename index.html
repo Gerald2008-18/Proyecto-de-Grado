@@ -735,13 +735,10 @@
           canvas.height = video.videoHeight;
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
+          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" }) : null;
           if (code) {
             stopCamera();
-            const qrData = code.data;
-            const idMatch = qrData.match(/ID:(\d+)/i);
-            const studentId = idMatch ? idMatch[1] : qrData;
-            onScan(studentId);
+            onScan(code.data);
           }
         }
       };
@@ -774,12 +771,9 @@
           const canvas = canvasRef.current;
           const ctx = canvas.getContext('2d');
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
+          const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" }) : null;
           if (code) {
-            const qrData = code.data;
-            const idMatch = qrData.match(/ID:(\d+)/i);
-            const studentId = idMatch ? idMatch[1] : qrData;
-            onScan(studentId);
+            onScan(code.data);
           } else {
             setError('No se detectó ningún código QR en la imagen. Intenta capturar nuevamente.');
           }
@@ -905,11 +899,17 @@
               <label className="block text-sm font-semibold text-gray-700 mb-2">Buscar por nombre, curso o ID</label>
               <input type="text" value={code} onChange={(e)=>setCode(e.target.value)} placeholder="Ej: Juan Pérez, 1A, o ID del estudiante"
                 className="w-full border-2 border-institutional-blue rounded-lg p-3 focus:ring-2 focus:ring-institutional-yellow focus:border-institutional-yellow mb-4 transition-all"
-                onKeyPress={(e)=> e.key==='Enter' && onSubmit(code.trim())}
+                onKeyPress={(e)=> e.key==='Enter' && code.trim() && onSubmit(code.trim())}
               />
               <div className="flex gap-3">
                 <button onClick={onClose} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold  ">Cancelar</button>
-                <button onClick={()=>onSubmit(code.trim())} className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold  ">Buscar</button>
+                <button 
+                  onClick={() => code.trim() && onSubmit(code.trim())} 
+                  className="flex-1 bg-institutional-blue text-white py-3 rounded-lg font-semibold disabled:opacity-50"
+                  disabled={!code.trim()}
+                >
+                  Buscar
+                </button>
               </div>
             </div>
           </div>
@@ -1445,52 +1445,55 @@
       };
       
       
-      const findStudent = async (searchTerm) => {
+      const findStudent = async (originalSearchTerm) => {
         try {
           setIsSubmitting(true);
-          if (!searchTerm || searchTerm.trim() === '') {
-            showNotification('error', 'Ingrese el nombre del estudiante');
+          const searchTerm = originalSearchTerm?.toString().trim();
+          
+          if (!searchTerm) {
+            showNotification('error', 'Ingrese el nombre o ID del estudiante');
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
             return;
           }
 
-          let results = null;
-          // Usar % como comodines para ilike en PostgREST (no *)
-          const likePattern = encodeURIComponent(`%${searchTerm}%`);
+          let results = [];
+          
+          // 1. Intentar buscar por ID exacto (Columna N) si es numérico
+          const numericId = parseInt(searchTerm.replace(/\D/g, ''));
+          if (!isNaN(numericId)) {
+            results = await supabaseRequest(
+              `atrasos?select=*&N=eq.${numericId}&fecha_atraso=is.null&limit=1`
+            );
+          }
 
-          // Buscar por nombre en registros base (fecha_atraso = NULL = catálogo de estudiantes)
-          results = await supabaseRequest(
-            `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
-          );
-
-          // Si no encuentra por nombre, buscar por curso
+          // 2. Si no hay resultados por ID, buscar por nombre (ilike)
           if (!results || results.length === 0) {
+            const likePattern = encodeURIComponent(`%${searchTerm}%`);
+            results = await supabaseRequest(
+              `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
+            );
+          }
+
+          // 3. Si sigue sin haber resultados, buscar por curso
+          if (!results || results.length === 0) {
+            const likePattern = encodeURIComponent(`%${searchTerm}%`);
             results = await supabaseRequest(
               `atrasos?select=*&Curso=ilike.${likePattern}&fecha_atraso=is.null&limit=5`
             );
           }
 
-          // Si el searchTerm es numérico, buscar por ID (columna N)
+          // 4. Fallback final: buscar en cualquier registro (aunque no sea catálogo)
           if (!results || results.length === 0) {
-            const numericId = parseInt(searchTerm);
-            if (!isNaN(numericId)) {
-              results = await supabaseRequest(
-                `atrasos?select=*&N=eq.${numericId}&fecha_atraso=is.null&limit=1`
-              );
-            }
-          }
-
-          // Fallback: buscar por nombre sin filtrar por fecha (cualquier registro)
-          if (!results || results.length === 0) {
+            const likePattern = encodeURIComponent(`%${searchTerm}%`);
             results = await supabaseRequest(
-              `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&limit=5`
+              `atrasos?select=*&Nombre completo estudiante=ilike.${likePattern}&limit=1`
             );
           }
 
           if (!results || results.length === 0) {
-            showNotification('error', 'Estudiante no encontrado en la base de datos');
+            showNotification('error', `No se encontró al estudiante: ${searchTerm}`);
             setIsSubmitting(false);
             setShowScanner(false);
             setShowManualInput(false);
