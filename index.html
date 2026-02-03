@@ -179,7 +179,9 @@
       }
       const options = { method, headers };
       if (body) options.body = JSON.stringify(body);
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, options);
+      const fullUrl = `${SUPABASE_URL}/rest/v1/${endpoint}`;
+      console.log(`[SUPABASE ${method}] ${fullUrl}`);
+      const res = await fetch(fullUrl, options);
       if (!res.ok) {
         let errText = 'Error en la petición';
         try { const j = await res.json(); errText = j.message || j.error || errText; } catch {}
