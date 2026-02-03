@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="es">
 <head>
@@ -1471,7 +1470,8 @@
 
       // Función helper para determinar si un registro está justificado
       const isJustified = (record) => {
-        // Un registro está justificado si tiene "[ARCHIVO_ADJUNTO:" o "[Archivo adjunto:" en el motivo
+        if (record.estado === 'justificado') return true;
+        // Fallback: revisar si tiene archivo adjunto en motivo (formato antiguo)
         return record.motivo_atraso && (
           record.motivo_atraso.includes('[ARCHIVO_ADJUNTO:') || 
           record.motivo_atraso.includes('[Archivo adjunto:')
@@ -1479,7 +1479,12 @@
       };
 
       // Función para extraer el archivo adjunto del motivo
-      const getAttachedFile = (motivo) => {
+      const getAttachedFile = (motivo, record) => {
+        // Primero revisar el campo archivo_adjunto (jsonb) - formato nuevo
+        if (record && record.archivo_adjunto) {
+          return record.archivo_adjunto;
+        }
+        // Fallback: buscar en motivo_atraso (formato antiguo)
         if (!motivo) return null;
         
         // Buscar el formato nuevo con datos base64
@@ -1528,7 +1533,7 @@
         }
         // Si statusFilter === 'all', matchesStatus permanece true
         
-        const hasValidStatus = record.estado === 'confirmado';
+        const hasValidStatus = record.estado === 'confirmado' || record.estado === 'justificado';
         
         if (userRole === 'estudiante' && userData) {
           const studentNameInRecord = record['Nombre completo estudiante'];
@@ -1642,9 +1647,9 @@
                             <td className="p-3 text-sm text-gray-600">
                               <div className="flex items-center gap-2">
                                 <span>{getCleanMotivo(record.motivo_atraso)}</span>
-                                {getAttachedFile(record.motivo_atraso) && (
+                                {getAttachedFile(record.motivo_atraso, record) && (
                                   <button
-                                    onClick={() => setViewingFile(getAttachedFile(record.motivo_atraso))}
+                                    onClick={() => setViewingFile(getAttachedFile(record.motivo_atraso, record))}
                                     className="bg-institutional-blue text-white px-2 py-1 rounded text-xs font-semibold hover:bg-institutional-blue-dark flex items-center gap-1 hover-scale"
                                     title="Ver archivo adjunto"
                                   >
@@ -1756,8 +1761,8 @@
       const submitJustification = async (justification, file) => {
         setIsSubmitting(true);
         try {
-          let fileData = null;
-          
+          let filePayload = null;
+
           // Convertir archivo a base64 si existe
           if (file) {
             const base64 = await new Promise((resolve, reject) => {
@@ -1766,8 +1771,7 @@
               reader.onerror = reject;
               reader.readAsDataURL(file);
             });
-            
-            fileData = {
+            filePayload = {
               name: file.name,
               size: file.size,
               type: file.type,
@@ -1775,17 +1779,25 @@
             };
           }
 
-          // Guardar motivo y archivo en formato JSON
-          const motivoTexto = fileData 
-            ? `${justification} [ARCHIVO_ADJUNTO:${JSON.stringify(fileData)}]`
-            : justification;
+          // Construir filtro único usando nombre + fecha + hora (no depende de N)
+          const nombre = encodeURIComponent(justificationRecord['Nombre completo estudiante']);
+          const fecha = justificationRecord.fecha_atraso;
+          const hora = justificationRecord.hora_llegada;
+          const filtro = `Nombre%20completo%20estudiante=eq.${nombre}&fecha_atraso=eq.${fecha}&hora_llegada=eq.${hora}`;
 
+          // Datos a actualizar: usar columnas justificacion y archivo_adjunto que existen en la tabla
           const updateData = {
-            motivo_atraso: motivoTexto
+            motivo_atraso: justification,
+            estado: 'justificado'
           };
-          
-          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', updateData);
-          
+
+          // Si hay archivo, agregarlo al campo archivo_adjunto (jsonb)
+          if (filePayload) {
+            updateData.archivo_adjunto = filePayload;
+          }
+
+          await supabaseRequest(`atrasos?${filtro}`, 'PATCH', updateData);
+
           showNotification('success', 'Justificación guardada correctamente');
           setJustificationRecord(null);
           await loadAttendanceRecords();
@@ -1889,7 +1901,7 @@
       const loadAttendanceRecords = async () => {
         setLoading(true);
         try {
-          const allRecords = await supabaseRequest('atrasos?order=fecha_atraso.desc,hora_llegada.desc&estado=eq.confirmado&limit=1000');
+          const allRecords = await supabaseRequest('atrasos?select=*&estado=in.(confirmado,justificado)&order=fecha_atraso.desc,hora_llegada.desc&limit=1000');
           setRecords(allRecords || []);
         } catch (err) {
           console.error('Error al cargar registros:', err);
