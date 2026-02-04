@@ -1336,6 +1336,11 @@
       useEffect(() => { 
         if (window.lucide) window.lucide.replace();
         console.log('FileViewerModal - Datos del archivo:', fileData);
+        console.log('FileViewerModal - Tipo de fileData:', typeof fileData);
+        console.log('FileViewerModal - fileData.url:', fileData?.url);
+        console.log('FileViewerModal - fileData.name:', fileData?.name);
+        console.log('FileViewerModal - fileData.type:', fileData?.type);
+        console.log('FileViewerModal - fileData.storage:', fileData?.storage);
       }, []);
 
       const handleDownload = () => {
@@ -1572,6 +1577,16 @@
       const getAttachedFile = (motivo, record) => {
         // Primero revisar el campo archivo_adjunto (jsonb) - formato nuevo
         if (record && record.archivo_adjunto) {
+          // Si es una cadena JSON, parsearla
+          if (typeof record.archivo_adjunto === 'string') {
+            try {
+              return JSON.parse(record.archivo_adjunto);
+            } catch (e) {
+              console.error('Error al parsear archivo_adjunto:', e);
+              return null;
+            }
+          }
+          // Si ya es un objeto, devolverlo directamente
           return record.archivo_adjunto;
         }
         // Fallback: buscar en motivo_atraso (formato antiguo)
@@ -1754,16 +1769,24 @@
                             <td className="p-3 text-sm text-gray-600">
                               <div className="flex items-center gap-2">
                                 <span>{getCleanMotivo(record.motivo_atraso)}</span>
-                                {getAttachedFile(record.motivo_atraso, record) && (
-                                  <button
-                                    onClick={() => setViewingFile(getAttachedFile(record.motivo_atraso, record))}
-                                    className="bg-institutional-blue text-white px-2 py-1 rounded text-xs font-semibold hover:bg-institutional-blue-dark flex items-center gap-1 hover-scale"
-                                    title="Ver archivo adjunto"
-                                  >
-                                    <i data-lucide="paperclip" style={{width:12,height:12}}></i>
-                                    Ver archivo
-                                  </button>
-                                )}
+                                {(() => {
+                                  const attachedFile = getAttachedFile(record.motivo_atraso, record);
+                                  if (attachedFile) {
+                                    return (
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          onClick={() => setViewingFile(attachedFile)}
+                                          className="bg-institutional-blue text-white px-2 py-1 rounded text-xs font-semibold hover:bg-institutional-blue-dark flex items-center gap-1 hover-scale"
+                                          title={attachedFile.name || "Ver archivo adjunto"}
+                                        >
+                                          <i data-lucide="paperclip" style={{width:12,height:12}}></i>
+                                          {attachedFile.name ? attachedFile.name.substring(0, 20) + (attachedFile.name.length > 20 ? '...' : '') : 'Ver archivo'}
+                                        </button>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
                               </div>
                             </td>
                             {userRole === 'inspeccion' && <td className="p-3 text-sm text-gray-600">{record.registrado_por || 'N/A'}</td>}
