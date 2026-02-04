@@ -1834,24 +1834,19 @@
             fileInfo = await uploadFileToStorage(file);
           }
 
-          // INSERT nueva fila con estado justificado
-          const nuevaFila = {
-            'Nombre completo estudiante': justificationRecord['Nombre completo estudiante'],
-            Curso: justificationRecord.Curso,
-            'Email estudiante': justificationRecord['Email estudiante'] || null,
-            fecha_atraso: justificationRecord.fecha_atraso,
-            hora_llegada: justificationRecord.hora_llegada,
-            registrado_por: justificationRecord.registrado_por || null,
+          // ACTUALIZAR la fila existente con la justificación
+          const updateData = {
             estado: 'justificado',
             motivo_atraso: justification
           };
 
           // Guardar info del archivo (solo URL + metadata, no base64)
           if (fileInfo) {
-            nuevaFila.archivo_adjunto = fileInfo;
+            updateData.archivo_adjunto = fileInfo;
           }
 
-          await supabaseRequest('atrasos', 'POST', nuevaFila);
+          // Actualizar usando el N (Primary Key) del registro
+          await supabaseRequest(`atrasos?N=eq.${justificationRecord.N}`, 'PATCH', updateData);
 
           showNotification('success', 'Justificación guardada correctamente');
           setJustificationRecord(null);
