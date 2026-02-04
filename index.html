@@ -1333,7 +1333,10 @@
 
     // FileViewerModal component
     function FileViewerModal({ fileData, onClose }) {
-      useEffect(() => { if (window.lucide) window.lucide.replace(); }, []);
+      useEffect(() => { 
+        if (window.lucide) window.lucide.replace();
+        console.log('FileViewerModal - Datos del archivo:', fileData);
+      }, []);
 
       const handleDownload = () => {
         if (!fileData) return;
@@ -1347,7 +1350,7 @@
           link.href = fileData.data;
           link.download = fileData.name || 'archivo';
         } else {
-          alert('No se puede descargar este archivo.');
+          alert('No se puede descargar este archivo porque no tiene URL ni datos.');
           return;
         }
         document.body.appendChild(link);
@@ -1359,6 +1362,8 @@
       const isPDF = fileData && fileData.type && fileData.type === 'application/pdf';
       const fileSource = fileData && (fileData.url || fileData.data);
       const hasValidFile = !!fileSource;
+
+      console.log('FileViewer - isImage:', isImage, 'isPDF:', isPDF, 'hasValidFile:', hasValidFile, 'fileSource:', fileSource);
 
       return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fadeIn">
@@ -1395,6 +1400,7 @@
                         {fileData?.size ? `${(fileData.size / 1024).toFixed(2)} KB` : 'Tamaño desconocido'}
                       </p>
                       {fileData?.type && <p className="text-xs text-gray-500 mt-1">Tipo: {fileData.type}</p>}
+                      {fileData?.storage && <p className="text-xs text-blue-600 mt-1 font-semibold">Storage: {fileData.storage}</p>}
                     </div>
                   </div>
                   {hasValidFile && (
@@ -1412,18 +1418,26 @@
               {hasValidFile ? (
                 <div className="border-4 border-institutional-yellow rounded-xl overflow-hidden bg-gray-100">
                   {isImage ? (
-                    <img src={fileSource} alt={fileData?.name} className="w-full h-auto" />
+                    <img src={fileSource} alt={fileData?.name} className="w-full h-auto" onError={(e) => {
+                      console.error('Error al cargar imagen:', fileSource);
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<div class="p-8 text-center"><p class="text-red-600">Error al cargar la imagen. URL: ' + fileSource + '</p></div>';
+                    }} />
                   ) : isPDF ? (
                     <iframe 
                       src={fileSource} 
                       className="w-full h-[600px]"
                       title={fileData?.name}
+                      onError={(e) => {
+                        console.error('Error al cargar PDF:', fileSource);
+                      }}
                     />
                   ) : (
                     <div className="p-8 text-center">
                       <i data-lucide="file" style={{width:64,height:64}} className="mx-auto mb-4 text-gray-400"></i>
                       <p className="text-gray-600">Vista previa no disponible para este tipo de archivo.</p>
                       <p className="text-sm text-gray-500 mt-2">Usa el botón "Descargar" para ver el archivo.</p>
+                      {fileSource && <p className="text-xs text-gray-400 mt-4 break-all">URL: {fileSource}</p>}
                     </div>
                   )}
                 </div>
@@ -1431,7 +1445,11 @@
                 <div className="border-4 border-orange-400 rounded-xl p-8 text-center bg-orange-50">
                   <i data-lucide="alert-triangle" style={{width:64,height:64}} className="mx-auto mb-4 text-orange-500"></i>
                   <p className="text-lg font-bold text-orange-700 mb-2">⚠️ Archivo No Disponible</p>
-                  <p className="text-gray-700">Este archivo fue guardado sin contenido.</p>
+                  <p className="text-gray-700 mb-2">Este archivo fue guardado sin URL ni contenido.</p>
+                  <div className="bg-white border-2 border-orange-300 rounded-lg p-4 mt-4 text-left">
+                    <p className="text-sm text-gray-600 font-semibold mb-2">📋 Datos del archivo:</p>
+                    <pre className="text-xs text-gray-600 overflow-auto">{JSON.stringify(fileData, null, 2)}</pre>
+                  </div>
                 </div>
               )}
             </div>
