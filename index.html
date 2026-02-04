@@ -350,12 +350,19 @@
     };
 
     // Subir archivo a Supabase Storage y devolver URL pública
+    // ==========================================
+    // SISTEMA DE ALMACENAMIENTO EN SUPABASE STORAGE
+    // Los archivos se guardan en la nube y son accesibles desde cualquier dispositivo
+    // ==========================================
+    
     const uploadFileToStorage = async (file, folder = 'justificaciones') => {
       try {
         const timestamp = Date.now();
         const randomStr = Math.random().toString(36).substring(7);
         const extension = file.name.split('.').pop();
         const fileName = `${folder}/${timestamp}_${randomStr}.${extension}`;
+
+        console.log('Subiendo archivo a Supabase Storage:', fileName);
 
         const formData = new FormData();
         formData.append('file', file);
@@ -371,11 +378,28 @@
 
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || errData.error || 'Error al subir archivo');
+          console.error('Error al subir archivo a Storage:', errData);
+          
+          // Mensajes de error más específicos
+          if (res.status === 404) {
+            throw new Error('❌ El bucket "atrasos-adjuntos" no existe. Por favor créalo en Supabase Storage.');
+          } else if (res.status === 403) {
+            throw new Error('❌ Sin permisos para subir archivos. Configura las políticas RLS del bucket.');
+          } else {
+            throw new Error(errData.message || errData.error || `Error ${res.status} al subir archivo`);
+          }
         }
 
         const publicURL = `${SUPABASE_URL}/storage/v1/object/public/atrasos-adjuntos/${fileName}`;
-        return { url: publicURL, name: file.name, size: file.size, type: file.type };
+        console.log('Archivo subido exitosamente:', publicURL);
+        
+        return { 
+          url: publicURL, 
+          name: file.name, 
+          size: file.size, 
+          type: file.type,
+          storage: 'supabase'
+        };
       } catch (err) {
         console.error('Error en uploadFileToStorage:', err);
         throw err;
@@ -1315,18 +1339,16 @@
         if (!fileData) return;
         
         const link = document.createElement('a');
-        // Si tiene URL (formato nuevo Storage), usar eso
         if (fileData.url) {
           link.href = fileData.url;
-          link.download = fileData.name;
+          link.download = fileData.name || 'archivo';
           link.target = '_blank';
-        }
-        // Si tiene data base64 (formato antiguo), usar eso
-        else if (fileData.data) {
+        } else if (fileData.data) {
           link.href = fileData.data;
-          link.download = fileData.name;
+          link.download = fileData.name || 'archivo';
         } else {
-          return; // No hay nada para descargar
+          alert('No se puede descargar este archivo.');
+          return;
         }
         document.body.appendChild(link);
         link.click();
@@ -1335,12 +1357,12 @@
 
       const isImage = fileData && fileData.type && fileData.type.startsWith('image/');
       const isPDF = fileData && fileData.type && fileData.type === 'application/pdf';
-      const fileSource = fileData && (fileData.url || fileData.data); // URL (nuevo) o base64 (antiguo)
+      const fileSource = fileData && (fileData.url || fileData.data);
+      const hasValidFile = !!fileSource;
 
       return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-4 border-institutional-yellow animate-slideIn relative">
-            {/* Botón X para cerrar - Posicionado absolutamente */}
             <button 
               onClick={onClose} 
               className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 z-20"
@@ -1368,13 +1390,14 @@
                       <i data-lucide={isImage ? 'image' : isPDF ? 'file-text' : 'file'} style={{width:24,height:24}} className="text-white"></i>
                     </div>
                     <div>
-                      <p className="font-bold text-gray-800">{fileData.name}</p>
+                      <p className="font-bold text-gray-800">{fileData?.name || 'Archivo sin nombre'}</p>
                       <p className="text-sm text-gray-600">
-                        {fileData.size ? `${(fileData.size / 1024).toFixed(2)} KB` : 'Tamaño desconocido'}
+                        {fileData?.size ? `${(fileData.size / 1024).toFixed(2)} KB` : 'Tamaño desconocido'}
                       </p>
+                      {fileData?.type && <p className="text-xs text-gray-500 mt-1">Tipo: {fileData.type}</p>}
                     </div>
                   </div>
-                  {fileSource && (
+                  {hasValidFile && (
                     <button 
                       onClick={handleDownload}
                       className="bg-institutional-yellow text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-institutional-yellow-dark flex items-center gap-2 hover-scale"
@@ -1386,15 +1409,15 @@
                 </div>
               </div>
 
-              {fileSource ? (
+              {hasValidFile ? (
                 <div className="border-4 border-institutional-yellow rounded-xl overflow-hidden bg-gray-100">
                   {isImage ? (
-                    <img src={fileSource} alt={fileData.name} className="w-full h-auto" />
+                    <img src={fileSource} alt={fileData?.name} className="w-full h-auto" />
                   ) : isPDF ? (
                     <iframe 
                       src={fileSource} 
                       className="w-full h-[600px]"
-                      title={fileData.name}
+                      title={fileData?.name}
                     />
                   ) : (
                     <div className="p-8 text-center">
@@ -1405,10 +1428,10 @@
                   )}
                 </div>
               ) : (
-                <div className="border-4 border-institutional-yellow rounded-xl p-8 text-center bg-gray-50">
-                  <i data-lucide="alert-circle" style={{width:64,height:64}} className="mx-auto mb-4 text-orange-400"></i>
-                  <p className="text-gray-600">Este archivo fue registrado en el formato antiguo.</p>
-                  <p className="text-sm text-gray-500 mt-2">Solo se guardó el nombre del archivo, no su contenido.</p>
+                <div className="border-4 border-orange-400 rounded-xl p-8 text-center bg-orange-50">
+                  <i data-lucide="alert-triangle" style={{width:64,height:64}} className="mx-auto mb-4 text-orange-500"></i>
+                  <p className="text-lg font-bold text-orange-700 mb-2">⚠️ Archivo No Disponible</p>
+                  <p className="text-gray-700">Este archivo fue guardado sin contenido.</p>
                 </div>
               )}
             </div>
