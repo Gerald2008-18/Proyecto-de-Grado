@@ -349,6 +349,40 @@
       return JSON.parse(txt);
     };
 
+    // Subir archivo a Supabase Storage y devolver URL pública
+    const uploadFileToStorage = async (file, folder = 'justificaciones') => {
+      try {
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substring(7);
+        const extension = file.name.split('.').pop();
+        const fileName = `${folder}/${timestamp}_${randomStr}.${extension}`;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/atrasos-adjuntos/${fileName}`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: formData
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || errData.error || 'Error al subir archivo');
+        }
+
+        const publicURL = `${SUPABASE_URL}/storage/v1/object/public/atrasos-adjuntos/${fileName}`;
+        return { url: publicURL, name: file.name, size: file.size, type: file.type };
+      } catch (err) {
+        console.error('Error en uploadFileToStorage:', err);
+        throw err;
+      }
+    };
+
+
     // FileUpload Component (SOLO para justificación)
     function FileUpload({ onFileSelect, selectedFile }) {
       const [isDragging, setIsDragging] = useState(false);
@@ -1278,11 +1312,22 @@
       useEffect(() => { if (window.lucide) window.lucide.replace(); }, []);
 
       const handleDownload = () => {
-        if (!fileData || !fileData.data) return;
+        if (!fileData) return;
         
         const link = document.createElement('a');
-        link.href = fileData.data;
-        link.download = fileData.name;
+        // Si tiene URL (formato nuevo Storage), usar eso
+        if (fileData.url) {
+          link.href = fileData.url;
+          link.download = fileData.name;
+          link.target = '_blank';
+        }
+        // Si tiene data base64 (formato antiguo), usar eso
+        else if (fileData.data) {
+          link.href = fileData.data;
+          link.download = fileData.name;
+        } else {
+          return; // No hay nada para descargar
+        }
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1290,6 +1335,7 @@
 
       const isImage = fileData && fileData.type && fileData.type.startsWith('image/');
       const isPDF = fileData && fileData.type && fileData.type === 'application/pdf';
+      const fileSource = fileData && (fileData.url || fileData.data); // URL (nuevo) o base64 (antiguo)
 
       return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fadeIn">
@@ -1328,7 +1374,7 @@
                       </p>
                     </div>
                   </div>
-                  {fileData.data && (
+                  {fileSource && (
                     <button 
                       onClick={handleDownload}
                       className="bg-institutional-yellow text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-institutional-yellow-dark flex items-center gap-2 hover-scale"
@@ -1340,13 +1386,13 @@
                 </div>
               </div>
 
-              {fileData.data ? (
+              {fileSource ? (
                 <div className="border-4 border-institutional-yellow rounded-xl overflow-hidden bg-gray-100">
                   {isImage ? (
-                    <img src={fileData.data} alt={fileData.name} className="w-full h-auto" />
+                    <img src={fileSource} alt={fileData.name} className="w-full h-auto" />
                   ) : isPDF ? (
                     <iframe 
-                      src={fileData.data} 
+                      src={fileSource} 
                       className="w-full h-[600px]"
                       title={fileData.name}
                     />
@@ -1781,26 +1827,14 @@
       const submitJustification = async (justification, file) => {
         setIsSubmitting(true);
         try {
-          let filePayload = null;
+          let fileInfo = null;
 
+          // Si hay archivo, subirlo a Storage (no base64 en la DB)
           if (file) {
-            const base64 = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            });
-            filePayload = {
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              data: base64
-            };
+            fileInfo = await uploadFileToStorage(file);
           }
 
-          // Solo INSERT una nueva fila con estado justificado
-          // No hacemos PATCH ni DELETE (fallarian por replica identity)
-          // La lógica de dedup en filteredRecords esconde la fila antigua "confirmado"
+          // INSERT nueva fila con estado justificado
           const nuevaFila = {
             'Nombre completo estudiante': justificationRecord['Nombre completo estudiante'],
             Curso: justificationRecord.Curso,
@@ -1812,8 +1846,9 @@
             motivo_atraso: justification
           };
 
-          if (filePayload) {
-            nuevaFila.archivo_adjunto = filePayload;
+          // Guardar info del archivo (solo URL + metadata, no base64)
+          if (fileInfo) {
+            nuevaFila.archivo_adjunto = fileInfo;
           }
 
           await supabaseRequest('atrasos', 'POST', nuevaFila);
