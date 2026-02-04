@@ -1931,18 +1931,55 @@
         try {
           const ecuadorDateTime = getEcuadorDateTime();
 
-          const newRecord = {
-            'Nombre completo estudiante': selectedStudent['Nombre completo estudiante'],
-            Curso: selectedStudent.Curso,
-            'Email estudiante': selectedStudent['Email estudiante'] || null,
-            fecha_atraso: ecuadorDateTime.dateString,
-            hora_llegada: ecuadorDateTime.timeString,
-            registrado_por: recordedBy,
-            estado: 'confirmado'
-          };
+          // Buscar si ya existe una fila con este estudiante pero sin fecha_atraso o hora_llegada
+          const studentEmail = selectedStudent['Email estudiante'];
+          const studentName = selectedStudent['Nombre completo estudiante'];
           
-          await supabaseRequest(`atrasos`, 'POST', newRecord);
-          showNotification('success', `Atraso confirmado para ${selectedStudent['Nombre completo estudiante']}`);
+          let existingEmptyRow = null;
+          
+          // Intentar buscar por email si existe
+          if (studentEmail) {
+            const byEmail = await supabaseRequest(`atrasos?Email estudiante=eq.${encodeURIComponent(studentEmail)}&fecha_atraso=is.null`);
+            if (byEmail && byEmail.length > 0) {
+              existingEmptyRow = byEmail[0];
+            }
+          }
+          
+          // Si no se encontró por email, buscar por nombre
+          if (!existingEmptyRow) {
+            const byName = await supabaseRequest(`atrasos?Nombre completo estudiante=eq.${encodeURIComponent(studentName)}&fecha_atraso=is.null`);
+            if (byName && byName.length > 0) {
+              existingEmptyRow = byName[0];
+            }
+          }
+
+          if (existingEmptyRow) {
+            // ACTUALIZAR la fila existente
+            const updateData = {
+              fecha_atraso: ecuadorDateTime.dateString,
+              hora_llegada: ecuadorDateTime.timeString,
+              registrado_por: recordedBy,
+              estado: 'confirmado'
+            };
+            
+            await supabaseRequest(`atrasos?N=eq.${existingEmptyRow.N}`, 'PATCH', updateData);
+            showNotification('success', `Atraso confirmado para ${studentName} (actualizado)`);
+          } else {
+            // CREAR una nueva fila solo si no existe una vacía
+            const newRecord = {
+              'Nombre completo estudiante': studentName,
+              Curso: selectedStudent.Curso,
+              'Email estudiante': studentEmail || null,
+              fecha_atraso: ecuadorDateTime.dateString,
+              hora_llegada: ecuadorDateTime.timeString,
+              registrado_por: recordedBy,
+              estado: 'confirmado'
+            };
+            
+            await supabaseRequest(`atrasos`, 'POST', newRecord);
+            showNotification('success', `Atraso confirmado para ${studentName} (nuevo registro)`);
+          }
+          
           setSelectedStudent(null);
           await loadAttendanceRecords();
         } catch (err) {
