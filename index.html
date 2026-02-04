@@ -36,54 +36,6 @@
       --primary-yellow-light: #FFD54F;
     }
 
-    /* ANIMACIONES */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(-100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -1000px 0; }
-      100% { background-position: 1000px 0; }
-    }
-
-    .animate-fadeIn {
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    .animate-slideIn {
-      animation: slideIn 0.5s ease-out;
-    }
-
-    .animate-pulse-slow {
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    .animate-bounce-slow {
-      animation: bounce 2s ease-in-out infinite;
-    }
-
-    .animate-shimmer {
-      animation: shimmer 2s linear infinite;
-      background: linear-gradient(to right, #10b981 0%, #34d399 50%, #10b981 100%);
-      background-size: 1000px 100%;
-    }
-
     /* Hover effects */
     .hover-scale {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -156,29 +108,10 @@
       animation: spin 1s linear infinite;
     }
 
-    /* Estilo mejorado para "Ya Justificado" */
+    /* Estilo para "Justificado" */
     .justified-badge {
-      background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-      box-shadow: 0 8px 16px rgba(16, 185, 129, 0.4), 0 0 40px rgba(16, 185, 129, 0.2);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .justified-badge::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-      transform: rotate(45deg);
-      animation: shimmer 3s linear infinite;
-    }
-
-    .justified-badge-icon {
-      background: rgba(255, 255, 255, 0.95);
-      animation: pulse 2s ease-in-out infinite;
+      background: #1976D2;
+      box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
     }
 
     /* Estilo para las secciones del formulario */
@@ -436,7 +369,7 @@
       useEffect(() => { if (window.lucide) window.lucide.replace(); }, [selectedFile]);
 
       return (
-        <div className="animate-fadeIn">
+        <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Adjuntar Evidencia (Opcional)
           </label>
@@ -456,7 +389,7 @@
             />
             
             {selectedFile ? (
-              <div className="flex items-center justify-center gap-3 animate-slideIn">
+              <div className="flex items-center justify-center gap-3">
                 <i data-lucide="file-check" style={{width:24,height:24}} className="text-institutional-blue"></i>
                 <div className="text-left">
                   <p className="font-semibold text-institutional-blue">{selectedFile.name}</p>
@@ -470,7 +403,7 @@
                 </button>
               </div>
             ) : (
-              <div className="animate-bounce-slow">
+              <div>
                 <i data-lucide="upload-cloud" style={{width:40,height:40}} className="mx-auto mb-3 text-institutional-blue"></i>
                 <p className="text-institutional-blue font-semibold mb-1">
                   Arrastra un archivo aquí
@@ -700,13 +633,13 @@
       useEffect(() => { if (window.lucide) window.lucide.replace(); }, [error, success, userType, showRegister, nivelEducativo, anoGrado, especialidad]);
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow hover-glow animate-slideIn">
+        <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow hover-glow">
             <div className="bg-gradient-to-r from-institutional-blue to-institutional-blue-dark p-8 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent"></div>
               <div className="text-center text-white relative z-10">
-                <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4 animate-pulse-slow drop-shadow-2xl" />
-                <h1 className="text-3xl font-bold drop-shadow-2xl animate-fadeIn" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>Sistema de Atrasos</h1>
+                <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4 drop-shadow-2xl" />
+                <h1 className="text-3xl font-bold drop-shadow-2xl" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>Sistema de Atrasos</h1>
                 <p className="text-yellow-300 mt-2 font-bold text-lg drop-shadow-lg" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>UEPDC</p>
               </div>
             </div>
@@ -738,21 +671,21 @@
               </div>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border-2 border-red-300 rounded-lg text-red-700 text-sm flex items-center gap-2 animate-slideIn">
+                <div className="mb-4 p-3 bg-red-50 border-2 border-red-300 rounded-lg text-red-700 text-sm flex items-center gap-2">
                   <i data-lucide="alert-circle" style={{width:18,height:18}}></i>
                   {error}
                 </div>
               )}
 
               {success && (
-                <div className="mb-4 p-3 bg-green-50 border-2 border-green-300 rounded-lg text-green-700 text-sm flex items-center gap-2 animate-slideIn">
+                <div className="mb-4 p-3 bg-green-50 border-2 border-green-300 rounded-lg text-green-700 text-sm flex items-center gap-2">
                   <i data-lucide="check-circle" style={{width:18,height:18}}></i>
                   {success}
                 </div>
               )}
 
               {userType === 'estudiante' && !showRegister ? (
-                <div className="space-y-4 animate-fadeIn">
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Correo Estudiantil</label>
                     <input 
@@ -794,7 +727,7 @@
                   </button>
                 </div>
               ) : userType === 'estudiante' && showRegister ? (
-                <div className="space-y-4 animate-fadeIn max-h-[60vh] overflow-y-auto pr-2">
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                   {/* Datos Personales */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
@@ -957,7 +890,7 @@
                   </button>
                 </div>
               ) : (
-                <div className="space-y-4 animate-fadeIn">
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Correo de Inspección</label>
                     <input 
@@ -1127,8 +1060,8 @@
       }, [isScanning, error, showImageViewer]);
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden relative border-4 border-institutional-yellow animate-slideIn">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden relative border-4 border-institutional-yellow">
             <button 
               onClick={() => { stopCamera(); onClose(); }} 
               className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 z-10 flex items-center justify-center"
@@ -1144,7 +1077,7 @@
             </div>
 
             <div className="p-6">
-              {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-slideIn flex items-center gap-2">
+              {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
                 <i data-lucide="alert-circle" style={{width:18,height:18}}></i>
                 <span>{error}</span>
               </div>}
@@ -1234,8 +1167,8 @@
       }, []);
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow animate-slideIn">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border-4 border-institutional-yellow">
             <div className="bg-institutional-blue p-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">Ingreso Manual</h2>
               <button onClick={onClose} className="text-white hover:bg-institutional-blue-dark rounded-lg p-2 hover-scale"><i data-lucide="x" style={{width:24,height:24}}></i></button>
@@ -1272,12 +1205,12 @@
       useEffect(()=> { if (window.lucide) window.lucide.replace(); }, [student, isSubmitting]);
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border-4 border-institutional-yellow max-h-[90vh] overflow-y-auto animate-slideIn">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border-4 border-institutional-yellow max-h-[90vh] overflow-y-auto">
             <div className="bg-institutional-yellow p-6 relative">
               <button onClick={onClose} className="absolute top-4 right-4 text-gray-700 hover:bg-institutional-yellow-dark rounded-lg p-2 hover-scale" disabled={isSubmitting}><i data-lucide="x" style={{width:24,height:24}}></i></button>
               <div className="flex items-center gap-3 text-gray-800">
-                <div className="bg-white rounded-full p-3 animate-pulse-slow"><i data-lucide="user" style={{width:32,height:32}} className="text-institutional-blue"></i></div>
+                <div className="bg-white rounded-full p-3"><i data-lucide="user" style={{width:32,height:32}} className="text-institutional-blue"></i></div>
                 <div>
                   <h2 className="text-2xl font-bold">Registro de Atraso</h2>
                   <p className="text-sm opacity-80">Confirmar información del estudiante</p>
@@ -1286,7 +1219,7 @@
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg animate-slideIn">
+              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <i data-lucide="user" style={{width:18,height:18}} className="text-institutional-blue"></i>
                   <span className="font-semibold text-gray-700">Nombre Completo</span>
@@ -1371,8 +1304,8 @@
       console.log('FileViewer - isImage:', isImage, 'isPDF:', isPDF, 'hasValidFile:', hasValidFile, 'fileSource:', fileSource);
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-4 border-institutional-yellow animate-slideIn relative">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-4 border-institutional-yellow relative">
             <button 
               onClick={onClose} 
               className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 z-20"
@@ -1385,54 +1318,20 @@
               </svg>
             </button>
 
-            <div className="bg-institutional-blue p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white">
-                <i data-lucide="file-text" style={{width:24,height:24}}></i>
-                <h2 className="text-xl font-bold">Archivo Adjunto</h2>
-              </div>
-            </div>
-
-            <div className="p-6 max-h-[70vh] overflow-y-auto">
-              <div className="bg-blue-50 border-2 border-institutional-blue rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-institutional-blue rounded-lg p-3">
-                      <i data-lucide={isImage ? 'image' : isPDF ? 'file-text' : 'file'} style={{width:24,height:24}} className="text-white"></i>
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-800">{fileData?.name || 'Archivo sin nombre'}</p>
-                      <p className="text-sm text-gray-600">
-                        {fileData?.size ? `${(fileData.size / 1024).toFixed(2)} KB` : 'Tamaño desconocido'}
-                      </p>
-                      {fileData?.type && <p className="text-xs text-gray-500 mt-1">Tipo: {fileData.type}</p>}
-                      {fileData?.storage && <p className="text-xs text-blue-600 mt-1 font-semibold">Storage: {fileData.storage}</p>}
-                    </div>
-                  </div>
-                  {hasValidFile && (
-                    <button 
-                      onClick={handleDownload}
-                      className="bg-institutional-yellow text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-institutional-yellow-dark flex items-center gap-2 hover-scale"
-                    >
-                      <i data-lucide="download" style={{width:18,height:18}}></i>
-                      Descargar
-                    </button>
-                  )}
-                </div>
-              </div>
-
+            <div className="p-6 max-h-[90vh] overflow-y-auto">
               {hasValidFile ? (
                 <div className="border-4 border-institutional-yellow rounded-xl overflow-hidden bg-gray-100">
                   {isImage ? (
-                    <img src={fileSource} alt={fileData?.name} className="w-full h-auto" onError={(e) => {
+                    <img src={fileSource} alt="Archivo adjunto" className="w-full h-auto" onError={(e) => {
                       console.error('Error al cargar imagen:', fileSource);
                       e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = '<div class="p-8 text-center"><p class="text-red-600">Error al cargar la imagen. URL: ' + fileSource + '</p></div>';
+                      e.target.parentElement.innerHTML = '<div class="p-8 text-center"><p class="text-red-600">Error al cargar la imagen</p></div>';
                     }} />
                   ) : isPDF ? (
                     <iframe 
                       src={fileSource} 
                       className="w-full h-[600px]"
-                      title={fileData?.name}
+                      title="Archivo PDF"
                       onError={(e) => {
                         console.error('Error al cargar PDF:', fileSource);
                       }}
@@ -1441,8 +1340,6 @@
                     <div className="p-8 text-center">
                       <i data-lucide="file" style={{width:64,height:64}} className="mx-auto mb-4 text-gray-400"></i>
                       <p className="text-gray-600">Vista previa no disponible para este tipo de archivo.</p>
-                      <p className="text-sm text-gray-500 mt-2">Usa el botón "Descargar" para ver el archivo.</p>
-                      {fileSource && <p className="text-xs text-gray-400 mt-4 break-all">URL: {fileSource}</p>}
                     </div>
                   )}
                 </div>
@@ -1450,11 +1347,7 @@
                 <div className="border-4 border-orange-400 rounded-xl p-8 text-center bg-orange-50">
                   <i data-lucide="alert-triangle" style={{width:64,height:64}} className="mx-auto mb-4 text-orange-500"></i>
                   <p className="text-lg font-bold text-orange-700 mb-2">⚠️ Archivo No Disponible</p>
-                  <p className="text-gray-700 mb-2">Este archivo fue guardado sin URL ni contenido.</p>
-                  <div className="bg-white border-2 border-orange-300 rounded-lg p-4 mt-4 text-left">
-                    <p className="text-sm text-gray-600 font-semibold mb-2">📋 Datos del archivo:</p>
-                    <pre className="text-xs text-gray-600 overflow-auto">{JSON.stringify(fileData, null, 2)}</pre>
-                  </div>
+                  <p className="text-gray-700">Este archivo no se puede mostrar.</p>
                 </div>
               )}
             </div>
@@ -1479,8 +1372,8 @@
       useEffect(() => { if (window.lucide) window.lucide.replace(); }, [selectedFile]);
 
       return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[90vh] overflow-y-auto border-4 border-institutional-yellow animate-slideIn">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[90vh] overflow-y-auto border-4 border-institutional-yellow">
             <div className="bg-institutional-blue p-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Justificar Atraso</h2>
@@ -1491,7 +1384,7 @@
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg animate-slideIn">
+              <div className="bg-blue-50 border-l-4 border-institutional-blue p-4 rounded-r-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <i data-lucide="user" style={{width:18,height:18}} className="text-institutional-blue"></i>
                   <span className="font-semibold text-gray-700">Estudiante</span>
@@ -1677,7 +1570,7 @@
       };
 
       return (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-4 border-institutional-yellow animate-fadeIn">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-4 border-institutional-yellow">
           <div className="bg-institutional-yellow p-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3 text-gray-800">
@@ -1732,7 +1625,7 @@
               </div>
             ) : (
               <>
-                <div className="text-sm text-gray-600 mb-4 flex items-center gap-2 animate-slideIn">
+                <div className="text-sm text-gray-600 mb-4 flex items-center gap-2">
                   <i data-lucide="database" style={{width:16,height:16}} className="text-institutional-blue"></i>
                   Mostrando {dedupedRecords.length} de {records.length} registros
                 </div>
@@ -1751,7 +1644,7 @@
                     <tbody>
                       {dedupedRecords.length === 0 ? (
                         <tr><td colSpan={userRole === 'inspeccion' ? '8' : '6'} className="text-center py-8 text-gray-500">
-                          <i data-lucide="search-x" style={{width:48,height:48}} className="mx-auto mb-2 text-gray-300 animate-bounce-slow"></i>
+                          <i data-lucide="search-x" style={{width:48,height:48}} className="mx-auto mb-2 text-gray-300"></i>
                           <p>No se encontraron registros de atrasos</p>
                         </td></tr>
                       ) : (
@@ -1816,12 +1709,9 @@
                                     Justificar
                                   </button>
                                 ) : (
-                                  <div className="justified-badge inline-flex items-center gap-2 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg hover-scale animate-fadeIn">
-                                    <div className="justified-badge-icon rounded-full p-1">
-                                      <i data-lucide="badge-check" style={{width:16,height:16}} className="text-emerald-600"></i>
-                                    </div>
-                                    <span className="tracking-wide" style={{textShadow: '0 1px 2px rgba(0,0,0,0.3)'}}>JUSTIFICADO</span>
-                                  </div>
+                                  <span className="inline-flex items-center gap-1 bg-institutional-blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                    <i data-lucide="file-check" style={{width:14,height:14}}></i> Justificado
+                                  </span>
                                 )}
                               </td>
                             )}
@@ -2022,7 +1912,7 @@
             };
             
             await supabaseRequest(`atrasos?N=eq.${existingEmptyRow.N}`, 'PATCH', updateData);
-            showNotification('success', `Atraso confirmado para ${studentName} (actualizado)`);
+            showNotification('success', `Atraso confirmado para ${studentName}`);
           } else {
             // CREAR una nueva fila solo si no existe una vacía
             const newRecord = {
@@ -2036,7 +1926,7 @@
             };
             
             await supabaseRequest(`atrasos`, 'POST', newRecord);
-            showNotification('success', `Atraso confirmado para ${studentName} (nuevo registro)`);
+            showNotification('success', `Atraso confirmado para ${studentName}`);
           }
           
           setSelectedStudent(null);
@@ -2126,10 +2016,10 @@
 
           <main className="container mx-auto px-4 py-8">
             {view === 'scanner' && userRole === 'inspeccion' ? (
-              <div className="max-w-2xl mx-auto animate-fadeIn">
+              <div className="max-w-2xl mx-auto">
                 <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border-4 border-institutional-yellow hover-glow">
                   <div className="text-center mb-8">
-                    <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4 animate-pulse-slow" />
+                    <img src={LOGO_URL} alt="UEPDC Logo" className="w-24 h-24 mx-auto mb-4" />
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">Registrar Atraso Estudiantil</h2>
                     <p className="text-gray-600">Selecciona un método para identificar al estudiante</p>
                   </div>
