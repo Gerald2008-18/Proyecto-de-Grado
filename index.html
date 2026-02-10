@@ -900,7 +900,11 @@
           const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
 
           if (code) {
-            stopCamera();
+            // No detenemos la cámara aquí, solo pausamos el escaneo
+            if (scanIntervalRef.current) {
+              clearInterval(scanIntervalRef.current);
+              scanIntervalRef.current = null;
+            }
             const qrData = code.data;
             const idMatch = qrData.match(/ID:(\d+)/i);
             const studentId = idMatch ? idMatch[1] : qrData;
@@ -1005,23 +1009,10 @@
 
                   <canvas ref={canvasRef} className="hidden"></canvas>
 
-                  {/* Solo botón para capturar foto */}
-                  <div className="mt-4">
-                    {isScanning && (
-                      <button 
-                        onClick={capturePhoto}
-                        className="w-full bg-institutional-yellow text-gray-800 px-6 py-4 rounded-xl font-bold text-lg hover:bg-institutional-yellow-dark transition-all shadow-lg flex items-center justify-center gap-2 border-2 border-institutional-blue"
-                      >
-                        <i data-lucide="camera" style={{width:24,height:24}}></i>
-                        Capturar Foto
-                      </button>
-                    )}
-                  </div>
-
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border-2 border-institutional-blue">
                     <p className="text-sm text-institutional-blue text-center flex items-center justify-center gap-2">
                       <i data-lucide="info" style={{width:18,height:18}}></i>
-                      La cámara escanea automáticamente. También puedes capturar una foto para revisarla.
+                      La cámara escanea automáticamente el código QR.
                     </p>
                   </div>
                 </>
@@ -1742,7 +1733,7 @@
           }
 
           setSelectedStudent(student);
-          setShowScanner(false);
+          // NO cerramos el scanner aquí - se cerrará cuando el usuario confirme o cancele
           setShowManualInput(false);
           setIsSubmitting(false);
         } catch (err) {
@@ -1804,6 +1795,7 @@
           }
           
           setSelectedStudent(null);
+          setShowScanner(false); // Cerrar el scanner después de confirmar
           await loadAttendanceRecords();
         } catch (err) {
           console.error('Error al guardar:', err);
@@ -1932,7 +1924,7 @@
 
           {showScanner && <QRScanner onScan={findStudent} onClose={()=>setShowScanner(false)} />}
           {showManualInput && <ManualInput onSubmit={findStudent} onClose={()=>setShowManualInput(false)} />}
-          {selectedStudent && <StudentModal student={selectedStudent} onConfirm={handleConfirmAttendance} onClose={()=>setSelectedStudent(null)} isSubmitting={isSubmitting} userData={userData} />}
+          {selectedStudent && <StudentModal student={selectedStudent} onConfirm={handleConfirmAttendance} onClose={()=>{setSelectedStudent(null); setShowScanner(false);}} isSubmitting={isSubmitting} userData={userData} />}
           {justificationRecord && <JustificationModal record={justificationRecord} onClose={()=>setJustificationRecord(null)} onSubmit={submitJustification} isSubmitting={isSubmitting} />}
 
         </div>
